@@ -14,6 +14,7 @@ using System.Drawing.Drawing2D;
 using System.Collections.Specialized;
 using System.Net.Sockets;
 using System.Collections;
+using System.ComponentModel;
 
 namespace WechatPrinter
 {
@@ -25,17 +26,7 @@ namespace WechatPrinter
         public delegate void BackgroundDelegate();
         private void BackgroundRun(BackgroundDelegate background)
         {
-            new Thread(new ThreadStart(delegate
-            {
-                try
-                {
-                    background();
-                }
-                catch (Exception ex)
-                {
-                    Console.WriteLine(ex.Message);
-                }
-            })).Start();
+            ThreadPool.QueueUserWorkItem(delegate { background(); });
         }
 
         #region 监听请求
@@ -156,64 +147,69 @@ namespace WechatPrinter
         #endregion
 
         #region 发送请求
+        #region 获取资源
+        //TODO
+        #endregion
+        #region 获取验证码显示
+        //TODO
+        #endregion
         #region 获得打印图片
         public bool IsPrintingImg = false;
         private const string toPrintImgRequestUrl = "http://joewoo.pw/printer/require_img.php";
         public void GetToPrintImg()
         {
-            if (!IsPrintingImg)
+            BackgroundRun(delegate
             {
-                Console.WriteLine("Start to get print images");
-                IsPrintingImg = true;
-                try
+                if (!IsPrintingImg)
                 {
-                    BackgroundRun(delegate
-                {
-                    PrintImgBean bean = GetJson<PrintImgBean>(toPrintImgRequestUrl);
-                    StringCollection filepaths = new StringCollection();
-                    if (bean.Urls.Count > 0)
+                    Console.WriteLine("Start to get print images");
+                    IsPrintingImg = true;
+                    try
                     {
-                        //TODO 获取全部图片并显示到主窗口后打印
-                        foreach (string url in bean.Urls)
+                        PrintImgBean bean = GetJson<PrintImgBean>(toPrintImgRequestUrl);
+                        StringCollection filepaths = new StringCollection();
+                        if (bean.Urls.Count > 0)
                         {
-                            string filepath = SavePrintImg(url);
-                            if (!filepath.Equals(String.Empty))
+                            //TODO 获取全部图片并显示到主窗口后打印
+                            foreach (string url in bean.Urls)
                             {
-                                filepaths.Add(filepath);
+                                string filepath = SavePrintImg(url);
+                                if (!filepath.Equals(String.Empty))
+                                {
+                                    filepaths.Add(filepath);
+                                }
                             }
                         }
+                        bean.Urls = filepaths;
+                        PrintImg(bean);
                     }
-                    bean.Urls = filepaths;
-                    PrintImg(bean);
-                });
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine("[GetToPrintImg Error]");
+                        Console.WriteLine(ex.Message);
+                        IsPrintingImg = false;
+                    }
                 }
-                catch (Exception ex)
-                {
-                    Console.WriteLine("[GetToPrintImg Error]");
-                    Console.WriteLine(ex.Message);
-                    IsPrintingImg = false;
-                }
-            }
+            });
         }
         #endregion
         #region 请求广告图片
         private const string adRequestUrl = "http://joewoo.pw/printer/require_img.php";
         public void GetAdImg()
         {
-            try
-            {
-                BackgroundRun(delegate
-                {
-                    AdImagesBean bean = GetJson<AdImagesBean>(adRequestUrl);
-                    bean = SaveAdImg(bean);
-                    StartAdImgTimer(bean.Urls);
-                });
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine(ex.Message);
-            }
-
+            BackgroundRun(delegate
+                   {
+                       try
+                       {
+                           AdImagesBean bean = GetJson<AdImagesBean>(adRequestUrl);
+                           bean = SaveAdImg(bean);
+                           StartAdImgTimer(bean.Urls);
+                       }
+                       catch (Exception ex)
+                       {
+                           Console.WriteLine(ex.Message);
+                       }
+                   });
         }
 
         #endregion
@@ -228,10 +224,10 @@ namespace WechatPrinter
                 request.Method = "GET";
                 return request.GetResponse();
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 Console.WriteLine("[DoGet Error]");
-                throw ex;
+                throw;
             }
 
         }
@@ -253,10 +249,10 @@ namespace WechatPrinter
                     }
                 }
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 Console.WriteLine("[GetJson Error]");
-                throw ex;
+                throw;
             }
             return bean;
         }
@@ -301,7 +297,7 @@ namespace WechatPrinter
             string filename = url.Substring(url.LastIndexOf("/") + 1);
             if (!Directory.Exists(filepath) || !File.Exists(filepath + filename))
             {
-                Console.WriteLine("File or folder not exists. Start to get image\t" + filename);
+                Console.WriteLine("File or folder not exists. Start to get image" + filename);
                 try
                 {
                     using (Stream stream = DoGet(url).GetResponseStream())
@@ -322,7 +318,7 @@ namespace WechatPrinter
             }
             else
             {
-                Console.WriteLine("File\t{0}\texists. Skip to get image.", filename);
+                Console.WriteLine("File {0} exists. Skip to get image.", filename);
                 return filepath + filename;
             }
             return String.Empty;
@@ -414,39 +410,37 @@ namespace WechatPrinter
                         foreach (string filepath in bean.Urls)
                         {
                             Console.WriteLine(pq.Name + " print\t" + filepath);
-                            using (Image img = Image.FromFile(filepath))
+
+                            BitmapImage bi = new BitmapImage();
+                            TransformedBitmap tbi = new TransformedBitmap();
+                            bi.BeginInit();
+                            bi.UriSource = new Uri(filepath);
+                            bi.CacheOption = BitmapCacheOption.OnLoad;
+                            bi.EndInit();
+                            tbi.BeginInit();
+                            tbi.Source = bi;
+                            
+
+                            if (bi.Width > bi.Height)
                             {
-                                if (img.Width > img.Height)
-                                {
-                                    img.RotateFlip(RotateFlipType.Rotate90FlipNone);
-                                }
-
-                                using (Graphics gr = Graphics.FromImage(img))
-                                {
-                                    gr.SmoothingMode = SmoothingMode.HighQuality;
-                                    gr.InterpolationMode = InterpolationMode.HighQualityBicubic;
-                                    gr.PixelOffsetMode = PixelOffsetMode.HighQuality;
-                                    gr.DrawImage(img, new Rectangle(0, 0, 1280, 1920));
-                                }
-
-                                using (MemoryStream ms = new MemoryStream())
-                                {
-                                    img.Save(ms, ImageFormat.Bmp);
-                                    ms.Seek(0, SeekOrigin.Begin);
-                                    BitmapImage bi = new BitmapImage();
-                                    bi.BeginInit();
-                                    bi.CacheOption = BitmapCacheOption.OnLoad;
-                                    bi.StreamSource = ms;
-                                    bi.EndInit();
-
-                                    var vis = new DrawingVisual();
-                                    var dc = vis.RenderOpen();
-                                    dc.DrawImage(bi, new Rect { Width = bi.Width, Height = bi.Height });
-                                    dc.Close();
-
-                                    pd.PrintVisual(vis, "Wechat Printer Image");
-                                }
+                                TransformedBitmap tbii = new TransformedBitmap();
+                                tbii.BeginInit();
+                                tbii.Source = bi;
+                                tbii.Transform = new RotateTransform(90);
+                                tbii.EndInit();
+                                tbi.Source = tbii;
                             }
+
+                                tbi.Transform = new ScaleTransform(320.0 / bi.PixelWidth, 180.0 / bi.PixelHeight);
+                                tbi.EndInit();
+                                Console.WriteLine("Size: {0}x{1}", tbi.PixelWidth, tbi.PixelHeight);
+
+                                var vis = new DrawingVisual();
+                                var dc = vis.RenderOpen();
+                                dc.DrawImage(tbi, new Rect { Width = tbi.Width, Height = tbi.Height });
+                                dc.Close();
+
+                                pd.PrintVisual(vis, "Wechat Printer Image");
 
                         }
                         IsPrintingImg = false;
