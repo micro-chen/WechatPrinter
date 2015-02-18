@@ -39,7 +39,15 @@
             </Border>
 
             <Border SnapsToDevicePixels="True" Grid.Row="0" Grid.Column="0">
-                <Image x:Name="image_print" SnapsToDevicePixels="True" Opacity="0"></Image>
+                <Label x:Name="label_downloading" Opacity="0" SnapsToDevicePixels="True" Grid.Row="0"  Grid.Column="0" Content="已收到请求，下载图片..." Foreground="#FFE1F5FE" FontSize="36" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                <Border.Effect>
+                    <DropShadowEffect Color="#FF000000" BlurRadius="55" ShadowDepth="0" Opacity="1" Direction="0" />
+                </Border.Effect>
+            </Border>
+
+
+            <Border SnapsToDevicePixels="True" Grid.Row="0" Grid.Column="0">
+                <Image x:Name="image_print" SnapsToDevicePixels="True" Opacity="0" Margin="2,0,-2,0"></Image>
                 <Border.Effect>
                     <DropShadowEffect Color="#FF795548" BlurRadius="15" ShadowDepth="0" Opacity="0.5" Direction="0" />
                 </Border.Effect>

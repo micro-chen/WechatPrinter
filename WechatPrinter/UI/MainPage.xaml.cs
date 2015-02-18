@@ -64,8 +64,8 @@ namespace WechatPrinter
 
         private void mediaElement_AdVideo_MediaEnded(object sender, RoutedEventArgs e)
         {
-            mediaElement_ad.Position = TimeSpan.Zero;
-            mediaElement_ad.Play();
+            //mediaElement_ad.Position = TimeSpan.Zero;
+            //mediaElement_ad.Play();
         }
     }
 }

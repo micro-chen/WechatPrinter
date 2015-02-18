@@ -75,7 +75,7 @@ namespace WechatPrinter
                     else
                     {
                         Window window = (MainWindow)Window.GetWindow(this);
-                        MessageBox.Show("连接微信打印错误", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
+                        MessageBox.Show("连接微信打印服务器错误", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
                         window.Close();
                     }
                 }

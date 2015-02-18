@@ -168,11 +168,13 @@ namespace WechatPrinter
                     PrintImgBean bean = HttpUtils.GetJson<PrintImgBean>(url);
                     if (bean.Url != null && bean.Url != String.Empty)
                     {
+                        ShowDownloading();
                         try
                         {
                             string filepath = HttpUtils.GetFile(FileUtils.ResPathsEnum.PrintImg, bean.Url);
                             if (!filepath.Equals(String.Empty))
                             {
+                                HideDownloading();
                                 PrintImg(filepath);
                                 ShowPrintImg(filepath);
                             }
@@ -183,6 +185,7 @@ namespace WechatPrinter
                             Console.WriteLine(ex.Message);
 
                             //TODO 下载出错提示
+                            HideDownloading();
                             ShowError(ErrorUtils.HandleError(ErrorUtils.Error.NetworkFileNotFound));
                         }
 
@@ -263,9 +266,9 @@ namespace WechatPrinter
         #region 更新打印图片
         private void ShowPrintImg(string filepath)
         {
+            BitmapImage bi = FileUtils.LoadImage(filepath, PRINT_IMG_DECODE_WIDTH);
             page.Dispatcher.BeginInvoke(new Action(delegate
             {
-                BitmapImage bi = FileUtils.LoadImage(filepath, PRINT_IMG_DECODE_WIDTH);
                 page.image_print.Source = bi;
                 page.mediaElement_ad.BeginAnimation(System.Windows.Controls.MediaElement.OpacityProperty, fadeOutAnim);
                 page.image_print.BeginAnimation(System.Windows.Controls.Image.OpacityProperty, fadeInAnim);
@@ -322,6 +325,7 @@ namespace WechatPrinter
         {
             TimerState s = (TimerState)state;
             if (adImgTimerFlag)
+            {
                 page.Dispatcher.BeginInvoke(new Action(delegate
                 {
                     if (s.Counter == s.Filepaths.Count)
@@ -340,9 +344,8 @@ namespace WechatPrinter
                         timer.Start();
                     };
                     page.mediaElement_ad2.BeginAnimation(MediaElement.OpacityProperty, adFadeOutAnim);
-
-
                 }));
+            }
             else
             {
                 s.MainTimer.Dispose();
@@ -356,21 +359,46 @@ namespace WechatPrinter
         #endregion
 
         #region 获得并更新广告视频
+        private bool adVidInit = false;
+        private static AdVideosBean adVidLastBean = null;
+        private int adVidCounter = 0;
         public void ShowAdVid(string url, ILoadStage stage)
         {
             BackgroundRun(delegate
             {
                 try
                 {
-                    StringCollection filepaths = HttpUtils.GetFiles(FileUtils.ResPathsEnum.AdVid, HttpUtils.GetJson<AdVideosBean>(url).Urls);
-                    if (filepaths.Count > 0)
+                    AdVideosBean bean = HttpUtils.GetJson<AdVideosBean>(url);
+                    bool flag = true;
+                    if (adVidLastBean != null && bean.Urls.Count > 0 && bean.Urls.Count == adVidLastBean.Urls.Count)
                     {
-                        page.Dispatcher.BeginInvoke(new Action(delegate
+                        StringCollection last = adVidLastBean.Urls;
+                        StringCollection now = bean.Urls;
+                        for (int i = 0; i < (last.Count >= now.Count ? now.Count : last.Count); i++)
                         {
-                            page.mediaElement_ad.Source = new Uri(filepaths[0]);
-                        }));
+                            if (last[i].Equals(now[i].Substring(now[i].LastIndexOf("/") + 1)))
+                            {
+                                flag = false;
+                                break;
+                            }
+                        }
                     }
-
+                    if (flag)
+                    {
+                        StringCollection filepaths = HttpUtils.GetFiles(FileUtils.ResPathsEnum.AdVid, bean.Urls);
+                        adVidCounter = 0;
+                        if (filepaths.Count > 0)
+                        {
+                            adVidLastBean = bean;
+                            adVidLastBean.Urls = filepaths;
+                            AdVidEnded(null, null);
+                        }
+                        if (!adVidInit)
+                        {
+                            page.mediaElement_ad.MediaEnded += AdVidEnded;
+                            adVidInit = true;
+                        }
+                    }
                     if (stage != null)
                         stage.Stage(1 << 1);
                 }
@@ -382,6 +410,18 @@ namespace WechatPrinter
             });
 
         }
+
+        public void AdVidEnded(Object o, EventArgs a)
+        {
+            StringCollection filepaths = adVidLastBean.Urls;
+            if (adVidCounter == filepaths.Count)
+                adVidCounter = 0;
+            Uri uri = new Uri(filepaths[adVidCounter++]);
+            page.Dispatcher.BeginInvoke(new Action(delegate
+            {
+                page.mediaElement_ad.Source = uri;
+            }));
+        }
         #endregion
 
         #region 获得并更新验证码
@@ -389,18 +429,22 @@ namespace WechatPrinter
         {
             BackgroundRun(delegate
             {
-                page.Dispatcher.BeginInvoke(new Action(delegate
+                string captcha = HttpUtils.GetText(url);
+                if (captcha != null && !captcha.Equals(String.Empty))
                 {
-                    try
+                    page.Dispatcher.BeginInvoke(new Action(delegate
                     {
-                        page.textBlock_captcha.Text = HttpUtils.GetText(url);
-                    }
-                    catch (Exception ex)
-                    {
-                        Console.WriteLine("[ShowCaptcha Error]");
-                        Console.WriteLine(ex.Message);
-                    }
-                }));
+                        try
+                        {
+                            page.textBlock_captcha.Text = captcha;
+                        }
+                        catch (Exception ex)
+                        {
+                            Console.WriteLine("[ShowCaptcha Error]");
+                            Console.WriteLine(ex.Message);
+                        }
+                    }));
+                }
             });
         }
         #endregion
@@ -449,8 +493,21 @@ namespace WechatPrinter
         }
         #endregion
 
-        #region 更新视频
-
+        #region 更新正在下载打印图片
+        private void ShowDownloading()
+        {
+            page.Dispatcher.BeginInvoke(new Action(delegate
+            {
+                page.label_downloading.BeginAnimation(Label.OpacityProperty, fadeInAnim);
+            }));
+        }
+        private void HideDownloading()
+        {
+            page.Dispatcher.BeginInvoke(new Action(delegate
+            {
+                page.label_downloading.BeginAnimation(Label.OpacityProperty, fadeOutAnim);
+            }));
+        }
         #endregion
         #endregion
 
