@@ -25,7 +25,10 @@ namespace WechatPrinter
     public class WechatPrinterServer : IPrinterStatus
     {
 
-        public static string PRINT_IMG_URL = "http://joewoo.pw/printer/printimg.php";
+        //public const string PRINT_IMG_URL = "http://joewoo.pw/printer/printimg.php";
+        //public const string PRINT_IMG_SUCCESS_URL = "";//TODO 打印成功地址，返回验证码并更新
+
+
         private InfoBean info;
 
         private void BackgroundRun(Action action)
@@ -157,15 +160,29 @@ namespace WechatPrinter
         #endregion
 
         #region 发送请求
+        #region 定时查询打印图片
+        private const int PRINT_IMG_TIMER_INTERVAL = 5 * 1000;
+        private Timer printImgTimer;
+        public void CheckPrintImg()
+        {
+            printImgTimer = new Timer(GetPrintImg, info.PrintImgUrl,0,PRINT_IMG_TIMER_INTERVAL);
+       
+        }
+        public void StopPrintImg()
+        {
+            printImgTimer.Dispose();
+        }
+        #endregion
+
         #region 获得打印图片
-        public void GetToPrintImg(string url)
+        private void GetPrintImg(Object o)
         {
             BackgroundRun(delegate
-            {
+            {            
                 Console.WriteLine("Start to get print images");
                 try
                 {
-                    PrintImgBean bean = HttpUtils.GetJson<PrintImgBean>(url);
+                    PrintImgBean bean = HttpUtils.GetJson<PrintImgBean>((string)o);
                     if (bean.Url != null && bean.Url != String.Empty)
                     {
                         ShowDownloading();
@@ -200,26 +217,6 @@ namespace WechatPrinter
                 }
             });
         }
-        #endregion
-
-        //#region 请求广告图片
-        //private AdImagesBean GetAdImg(string url)
-        //{
-        //    AdImagesBean bean = null;
-        //    try
-        //    {
-        //        bean = HttpUtils.GetJson<AdImagesBean>(url);
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        Console.WriteLine("[SaveAdImg Error]");
-        //        Console.WriteLine(ex.Message);
-        //    }
-        //    return bean;
-        //}
-        //#endregion
-
-        #region 请求广告视频
         #endregion
         #endregion
 
@@ -425,27 +422,23 @@ namespace WechatPrinter
         #endregion
 
         #region 获得并更新验证码
-        public void ShowCaptcha(string url)
+        public void ShowCaptcha(string captcha)
         {
-            BackgroundRun(delegate
+            if (captcha != null && !captcha.Equals(String.Empty))
             {
-                string captcha = HttpUtils.GetText(url);
-                if (captcha != null && !captcha.Equals(String.Empty))
+                page.Dispatcher.BeginInvoke(new Action(delegate
                 {
-                    page.Dispatcher.BeginInvoke(new Action(delegate
+                    try
                     {
-                        try
-                        {
-                            page.textBlock_captcha.Text = captcha;
-                        }
-                        catch (Exception ex)
-                        {
-                            Console.WriteLine("[ShowCaptcha Error]");
-                            Console.WriteLine(ex.Message);
-                        }
-                    }));
-                }
-            });
+                        page.textBlock_captcha.Text = captcha;
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine("[ShowCaptcha Error]");
+                        Console.WriteLine(ex.Message);
+                    }
+                }));
+            }
         }
         #endregion
 

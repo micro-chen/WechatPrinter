@@ -44,15 +44,9 @@ namespace WechatPrinter
         {
             if (e.Key == Key.Escape)
                 window.Close();
-            else if (e.Key == Key.Enter)
-                server.ShowAdImg(WechatPrinterServer.PRINT_IMG_URL, null);
             else if (e.Key == Key.J)
                 server.HideAdImg();
-            else if (e.Key == Key.Space)
-            {
-                server.GetToPrintImg(WechatPrinterServer.PRINT_IMG_URL);
-                Console.WriteLine("space");
-            }
+           
         }
 
         private void page_main_Loaded(object sender, RoutedEventArgs e)

@@ -98,7 +98,7 @@ namespace WechatPrinter
                     page.mediaElement_QR.Source = new Uri(info.QRCodeUrl);
                     page.mediaElement_QR.Visibility = Visibility.Visible;
 
-                    server.ShowCaptcha(info.CaptchaUrl);
+                    server.ShowCaptcha(info.Captcha);
                     page.label_captcha.Visibility = Visibility.Visible;
 
                     Stage(0);
@@ -149,7 +149,10 @@ namespace WechatPrinter
         public string AdImagesUrl { get; set; }
         public string AdVideosUrl { get; set; }
         public string QRCodeUrl { get; set; }
-        public string CaptchaUrl { get; set; }
+        public string PrintImgUrl { get; set; }
+        public string PrintImgSuccessUrl { get; set; }
+        public string PrintImgFailUrl { get; set; }
+        public string Captcha { get; set; }
     }
 
     public interface ILoadStatus
