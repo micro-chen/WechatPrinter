@@ -101,7 +101,7 @@
                 <Label Content="马上打印喜爱的图片" Foreground="#FFE1F5FE" FontSize="36" HorizontalAlignment="Center" />
             </StackPanel>
             <Label x:Name="label_error" Opacity="0" Foreground="#FFFF5252" FontSize="36" Grid.Row="3" Grid.Column="0" HorizontalAlignment="Center" VerticalAlignment="Center"/>
-            <Label Content="Copyright © 深米科技" Foreground="#FFE1F5FE" FontSize="22" HorizontalAlignment="Center" Grid.Row="4"  Grid.Column="0" VerticalAlignment="Bottom" Margin="112,0"/>
+            <Label Content="V1.0 Copyright © 深米科技" Foreground="#FFE1F5FE" FontSize="22" HorizontalAlignment="Center" Grid.Row="4"  Grid.Column="0" VerticalAlignment="Bottom"/>
         </Grid>
     </Grid>
 </Page>

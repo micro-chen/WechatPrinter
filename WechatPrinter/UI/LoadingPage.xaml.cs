@@ -29,7 +29,6 @@ namespace WechatPrinter
 
         //"http://ww1.sinaimg.cn/bmiddle/6cf8a22bjw1eodufymcyqj218g0tndqr.jpg"
 
-        public static string INFO_URL = "http://joewoo.pw/printer/info.php";
         private MainPage page;
 
         public LoadingPage(ILoadStatus status)
@@ -46,12 +45,18 @@ namespace WechatPrinter
             int retry = 0;
             label_loading.Content = "连接微信打印服务器...";
 
+            //page = new MainPage();
+            //WechatPrinterServer server = new WechatPrinterServer(page);
+            //page.Server = server;
+            //status.LoadCompleted(page);
+            //return;
+
             BackgroundWorker bw = new BackgroundWorker();
             bw.DoWork += (o, ee) =>
             {
                 try
                 {
-                    ee.Result = HttpUtils.GetJson<InfoBean>(INFO_URL);
+                    ee.Result = HttpUtils.GetJson<InfoBean>(WechatPrinterConf.InitUrl, null);
                 }
                 catch (Exception ex)
                 {
@@ -83,22 +88,24 @@ namespace WechatPrinter
                 {
                     info = (InfoBean)ee.Result;
 
+                    WechatPrinterConf.Init(info);
+
                     page = new MainPage();
-                    WechatPrinterServer server = new WechatPrinterServer(page, info);
+                    WechatPrinterServer server = new WechatPrinterServer(page);
                     page.Server = server;
 
-                    server.ShowAdVid(info.AdVideosUrl, this);
+                    server.ShowAdVid(WechatPrinterConf.AdVidUrls, this);
                     page.mediaElement_ad.Visibility = Visibility.Visible;
                     page.mediaElement_ad.Play();
 
-                    server.ShowAdImg(info.AdImagesUrl, this);
+                    server.ShowAdImg(WechatPrinterConf.AdImgUrls, this);
                     page.mediaElement_ad2.Visibility = Visibility.Visible;
                     page.mediaElement_ad2.Play();
 
-                    page.mediaElement_QR.Source = new Uri(info.QRCodeUrl);
+                    //page.mediaElement_QR.Source = new Uri(WechatPrinterConf.QRCodeUrl);
                     page.mediaElement_QR.Visibility = Visibility.Visible;
 
-                    server.ShowCaptcha(info.Captcha);
+                    server.ShowCaptcha(WechatPrinterConf.Captcha);
                     page.label_captcha.Visibility = Visibility.Visible;
 
                     Stage(0);
@@ -146,13 +153,10 @@ namespace WechatPrinter
 
     public class InfoBean
     {
-        public string AdImagesUrl { get; set; }
-        public string AdVideosUrl { get; set; }
+        public StringCollection AdVidUrls { get; set; }
+        public StringCollection AdImgUrls { get; set; }
         public string QRCodeUrl { get; set; }
-        public string PrintImgUrl { get; set; }
-        public string PrintImgSuccessUrl { get; set; }
-        public string PrintImgFailUrl { get; set; }
-        public string Captcha { get; set; }
+        public int Captcha { get; set; }
     }
 
     public interface ILoadStatus

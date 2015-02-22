@@ -17,24 +17,25 @@ namespace WechatPrinter.Support
 {
     class PrinterUtils
     {
-        private const double PRINT_WIDTH = 200;
-        private const double PRINT_HEIGHT = 300;
+
         private static PrintDialog printDialog;
         private static PrintQueue printQueue;
         private static Queue<string> filepahtQueue = new Queue<string>();
         private const int PRINTER_CHECK_INTERVAL = 250;
         private static IPrinterStatus printerStatus;
+        private static MainPage mainPage;
         private static bool run;
         private static bool isPrinting = false;
 
-        public static void Start(IPrinterStatus ps)
+        public static void Start(IPrinterStatus ps, MainPage page)
         {
             ThreadPool.QueueUserWorkItem(delegate(Object state)
             {
                 run = true;
                 foreach (PrintQueue pq in new LocalPrintServer().GetPrintQueues())
                 {
-                    if (pq.Name.Equals("Microsoft XPS Document Writer"))
+                    Console.WriteLine(pq.Name);
+                    if (pq.Name.Equals(WechatPrinterConf.PrinterName))
                     {
                         printQueue = pq;
                         printDialog = new PrintDialog();
@@ -43,6 +44,7 @@ namespace WechatPrinter.Support
                     }
                 }
                 printerStatus = (IPrinterStatus)state;
+                mainPage = page;
                 Work();
             }, ps);
         }
@@ -74,6 +76,8 @@ namespace WechatPrinter.Support
 
                         Console.WriteLine(printQueue.Name + " print\t" + filepath);
 
+                        //mainPage.Dispatcher.BeginInvoke(new Action(delegate {
+
                         using (MemoryStream ms = new MemoryStream())
                         {
                             Bitmap bm = new Bitmap(filepath);
@@ -94,42 +98,60 @@ namespace WechatPrinter.Support
                             TransformedBitmap tbi = new TransformedBitmap();
                             tbi.BeginInit();
                             tbi.Source = bi;
-                            tbi.Transform = new ScaleTransform(PRINT_WIDTH / bi.PixelWidth, PRINT_HEIGHT / bi.PixelHeight);
+                            tbi.Transform = new ScaleTransform(WechatPrinterConf.PrinterWidth / bi.PixelWidth, WechatPrinterConf.PrinterHeight / bi.PixelHeight);
                             tbi.EndInit();
                             tbi.Freeze();
-                            Console.WriteLine("Final Size: {0}x{1}", tbi.PixelWidth, tbi.PixelHeight);
+
+                            //Console.WriteLine("printable 1: {0}x{1}", printDialog.PrintableAreaWidth, printDialog.PrintableAreaHeight);
+                            //PrintTicket pt = printQueue.DefaultPrintTicket;
+                            //pt.PageMediaSize = new PageMediaSize(PRINT_WIDTH, PRINT_HEIGHT);
+                            //printDialog.PrintTicket = pt;
+                            //Console.WriteLine("printable 2: {0}x{1}", printDialog.PrintableAreaWidth, printDialog.PrintableAreaHeight);
+
+                            var group = new DrawingGroup();
+                            group.Children.Add(new ImageDrawing(tbi, new Rect(0, 0, WechatPrinterConf.PrinterWidth * (WechatPrinterConf.ScreenDpi / WechatPrinterConf.PrinterDpi), WechatPrinterConf.PrinterHeight * (WechatPrinterConf.ScreenDpi / WechatPrinterConf.PrinterDpi))));
 
                             var vis = new DrawingVisual();
-                            var dc = vis.RenderOpen();
-                            dc.DrawImage(tbi, new Rect { Width = bi.Width, Height = bi.Height });
-                            dc.Close();
+
+
+                            using (DrawingContext dc = vis.RenderOpen())
+                            {
+                                dc.DrawDrawing(group);
+                            }
+
 
                             isPrinting = true;
 
                             printDialog.PrintVisual(vis, "Wechat Printer Image");
                         }
 
+                        //}));
+
+
+
                     }
                 }
                 else if (printQueue.IsPrinting || printQueue.IsBusy || printQueue.IsProcessing)
                 {
-                    //if (!isPrinting)
-                    //{
-                    //    isPrinting = true;
-                    //}
-                    //Console.WriteLine("Printing");
+                    if (!isPrinting)
+                    {
+                        isPrinting = true;
+                    }
+                    Console.WriteLine("Printing");
                 }
                 else if (printQueue.IsWaiting || printQueue.QueueStatus == PrintQueueStatus.None)
                 {
                     if (isPrinting)
                     {
                         printerStatus.PrinterCompeleted();
+                        //TODO
                         isPrinting = false;
                     }
                 }
                 else
                 {
-                    CheckError();
+                    //CheckError();
+                    //TODO
                 }
                 Thread.Sleep(PRINTER_CHECK_INTERVAL);
             }

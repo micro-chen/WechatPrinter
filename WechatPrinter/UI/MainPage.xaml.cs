@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Printing;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -13,6 +14,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using WechatPrinter.Support;
 
 namespace WechatPrinter
 {
@@ -46,7 +48,12 @@ namespace WechatPrinter
                 window.Close();
             else if (e.Key == Key.J)
                 server.HideAdImg();
-           
+            else if (e.Key == Key.Enter)
+            {
+                Console.WriteLine("Enter");
+
+                PrinterUtils.Print("D:\\VS\\projects\\WechatPrinter\\WechatPrinter\\bin\\Debug\\res\\print\\1.JPG");
+            }
         }
 
         private void page_main_Loaded(object sender, RoutedEventArgs e)

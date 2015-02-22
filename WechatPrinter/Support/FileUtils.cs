@@ -106,7 +106,7 @@ namespace WechatPrinter.Support
             }
         }
 
-        class FileCreateTimeComparer : IComparer
+        public class FileCreateTimeComparer : IComparer
         {
             int IComparer.Compare(Object o1, Object o2)
             {

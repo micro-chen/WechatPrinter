@@ -25,148 +25,23 @@ namespace WechatPrinter
     public class WechatPrinterServer : IPrinterStatus
     {
 
-        //public const string PRINT_IMG_URL = "http://joewoo.pw/printer/printimg.php";
-        //public const string PRINT_IMG_SUCCESS_URL = "";//TODO 打印成功地址，返回验证码并更新
-
-
-        private InfoBean info;
-
         private void BackgroundRun(Action action)
         {
             ThreadPool.QueueUserWorkItem(delegate { action(); });
         }
-        public WechatPrinterServer(MainPage page, InfoBean info)
+        public WechatPrinterServer(MainPage page)
         {
             this.page = page;
-            this.info = info;
-            PrinterUtils.Start(this);
+            PrinterUtils.Start(this, page);
         }
 
-        #region 监听请求
-        //    private int listenPort = 2333;
-        //    private string listenIp = "127.0.0.1";
-        //    private string requireIpUrl = "http://clzroom.jd-app.com/printer/require_ip.php";
-        //    private HttpListener listener;
-        //    public void Listen()
-        //    {
-        //        if (!isListening)
-        //        {
-        //            try
-        //            {
-        //                new Thread(new ThreadStart(HandleListen)).Start();
-        //            }
-        //            catch
-        //            {
-        //                MessageBox.Show("ERROR");
-        //            }
-        //        }
-        //    }
-        //    private void HandleListen()
-        //    {
-        //        string localIp = GetLocalIp();
-        //        if (localIp != null && localIp.Length > 0)
-        //        {
-        //            listenIp = GetLocalIp();
-        //            Console.WriteLine("Local IP: " + GetLocalIp());
-        //        }
-        //        isListening = true;
-        //        listener = new HttpListener();
-        //        listener.AuthenticationSchemes = AuthenticationSchemes.Anonymous;
-        //        listener.Prefixes.Add("http://" + listenIp + ":" + listenPort + "/");
-        //        Console.WriteLine("Start Listen: http://" + listenIp + ":" + listenPort + "/");
-        //        listener.Start();
-        //        listener.BeginGetContext(new AsyncCallback(GetContextCallBack), listener);
-        //    }
-        //    private void GetContextCallBack(IAsyncResult ar)
-        //    {
-        //        try
-        //        {
-        //            listener = ar.AsyncState as HttpListener;
-        //            HandleRequest(listener.EndGetContext(ar));
-        //            listener.BeginGetContext(new AsyncCallback(GetContextCallBack), listener);
-        //        }
-        //        catch(Exception ex)
-        //        {
-        //            Console.WriteLine("ERROR - GetContextCallBack(): " + ex.Message);
-        //        }
-        //    }
-        //    private void HandleRequest(HttpListenerContext context)
-        //    {
-        //        HttpListenerRequest request = context.Request;
-        //        HttpListenerResponse response = context.Response;
-        //        Console.WriteLine("Request URL: " + request.Url);
-        //        if (request.HasEntityBody)
-        //        {
-        //            string json;
-        //            using (StreamReader reader = new StreamReader(request.InputStream, request.ContentEncoding))
-        //            {
-        //                json = reader.ReadToEnd();
-        //                reader.Close();
-        //                request.InputStream.Close();
-        //                Console.WriteLine(json);
-        //            }
-        //            HandleResponse(response, 200);
-        //        }
-        //        else
-        //            HandleResponse(response, 400);
-        //    }
-        //    private void HandleResponse(HttpListenerResponse response, int status)
-        //    {
-        //        response.StatusCode = status;
-        //        using (StreamWriter writer = new StreamWriter(response.OutputStream))
-        //        {
-        //            if (status == 200)
-        //                writer.Write("-SUCCESS-");
-        //            else
-        //                writer.Write("!FAIL!");
-        //            writer.Close();
-        //            response.Close();
-        //        }
-        //    }
-        //    public void Stop()
-        //    {
-        //        isListening = false;
-        //        if (!isListening)
-        //            listener.Stop();
-        //    }
-        //    private string GetRemoteIp()
-        //    {
-        //        string realIp = listenIp;
-        //        try
-        //        {
-        //            realIp = new WebClient().DownloadString(requireIpUrl);
-        //        }
-        //        catch
-        //        {
-        //            Console.Write("GetIp network failed. Return ");
-        //        }
-        //        Console.WriteLine("IP " + realIp);
-        //        return realIp;
-        //    }
-        //    private string GetLocalIp()
-        //    {
-        //        IPAddress[] localIPs;
-        //        localIPs = Dns.GetHostAddresses(Dns.GetHostName());
-        //        string localIp = listenIp;
-        //        foreach (IPAddress ip in localIPs)
-        //        {
-        //            if (ip.AddressFamily == AddressFamily.InterNetwork) {
-        //                localIp = ip.ToString();
-        //                break;
-        //            }
-        //        }
-        //        return localIp;
-        //    }
-        #endregion
 
         #region 发送请求
         #region 定时查询打印图片
-        private const int PRINT_IMG_TIMER_INTERVAL = 5 * 1000;
         private Timer printImgTimer;
         public void CheckPrintImg()
         {
-            printImgTimer = new Timer(GetPrintImg, info.PrintImgUrl,0,PRINT_IMG_TIMER_INTERVAL);
-       
+            printImgTimer = new Timer(GetPrintImg, WechatPrinterConf.PrintImgUrl, 0, WechatPrinterConf.PrintImgInterval);
         }
         public void StopPrintImg()
         {
@@ -178,17 +53,18 @@ namespace WechatPrinter
         private void GetPrintImg(Object o)
         {
             BackgroundRun(delegate
-            {            
+            {
                 Console.WriteLine("Start to get print images");
                 try
                 {
-                    PrintImgBean bean = HttpUtils.GetJson<PrintImgBean>((string)o);
-                    if (bean.Url != null && bean.Url != String.Empty)
+                    PrintImgBean bean = HttpUtils.GetJson<PrintImgBean>((string)o, null);
+                    if (bean.ImgUrl != null && bean.ImgUrl != String.Empty)
                     {
                         ShowDownloading();
                         try
                         {
-                            string filepath = HttpUtils.GetFile(FileUtils.ResPathsEnum.PrintImg, bean.Url);
+                            //string filepath = HttpUtils.GetFile(FileUtils.ResPathsEnum.PrintImg, bean.Url);
+                            string filepath = HttpUtils.GetFile(FileUtils.ResPathsEnum.PrintImg, WechatPrinterConf.PrintImgUrl, null);
                             if (!filepath.Equals(String.Empty))
                             {
                                 HideDownloading();
@@ -212,46 +88,49 @@ namespace WechatPrinter
                 catch (Exception ex)
                 {
                     Console.WriteLine("[GetToPrintImg Error]");
-                    Console.WriteLine(ex.Message);
+                    Console.WriteLine(ex.StackTrace);
                     ShowError(ErrorUtils.HandleError(ErrorUtils.Error.NetworkUnavailable));
                 }
             });
         }
         #endregion
+        #region 返回打印状态
+        #region 打印成功
+        private void SendPrintSuccess()
+        {
+            BackgroundRun(delegate
+            {
+                try
+                {
+                    Dictionary<string, string> param = new Dictionary<string, string>();
+                    param.Add(WechatPrinterConf.ParamKeys.Status, ((int)WechatPrinterConf.PrintImgStatus.Success).ToString());
+                    PrintStatusBean bean = HttpUtils.GetJson<PrintStatusBean>(WechatPrinterConf.PrintImgCallBackUrl, param);//TODO 打印成功
+                    if (bean.Status == (int)WechatPrinterConf.PrintImgStatus.Success)
+                    {
+                        ShowCaptcha(bean.Captcha);
+                    }
+                    else
+                    {
+                        ShowCaptcha(-1);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine("[SendPrintSuccess Error]");
+                    Console.WriteLine(ex.StackTrace);
+                }
+            });
+
+        }
         #endregion
+        #region 打印失败
+        private void SendPrintFailed()
+        {
 
-        //#region 文件管理
-        //#region 保存广告图片
-        //private AdImagesBean SaveAdImg(AdImagesBean bean)
-        //{
-        //    StringCollection filepaths = new StringCollection();
-        //    foreach (string url in bean.Urls)
-        //    {
-        //        try
-        //        {
-        //            Console.Write("Ad Image Url: " + url + "\t");
-        //            string filepath = HttpUtils.GetImg(FileUtils.ResPathsEnum.AdImg, url);
-        //            if (!filepath.Equals(String.Empty))
-        //                filepaths.Add(filepath);
-        //        }
-        //        catch(Exception ex)
-        //        {
-        //            Console.WriteLine("[SaveAdImg Error]");
-        //            Console.WriteLine(ex.Message);
-        //        }
-        //    }
-        //    bean.Urls = filepaths;
-        //    return bean;
-        //}
-        //#endregion
-
-        //#region 保存打印图片
-        //private string SavePrintImg(string url)
-        //{
-        //    return HttpUtils.GetImg(FileUtils.ResPathsEnum.PrintImg, url);
-        //}
-        //#endregion
-        //#endregion
+        }
+        #endregion
+        #endregion
+        #endregion
 
         #region 界面更新
         private MainPage page;
@@ -289,7 +168,7 @@ namespace WechatPrinter
         private const int AD_IMG_WAIT_BEFORE_IN = 300;
         private const int AD_IMG_FADE_TIME = 1 * 1000;
         private bool adImgTimerFlag;
-        public void ShowAdImg(string url, ILoadStage stage)
+        public void ShowAdImg(StringCollection urls, ILoadStage stage)
         {
             BackgroundRun(delegate
             {
@@ -298,7 +177,7 @@ namespace WechatPrinter
                     adImgTimerFlag = true;
                     TimerState adImgTimerState = new TimerState();
 
-                    adImgTimerState.Filepaths = HttpUtils.GetFiles(FileUtils.ResPathsEnum.AdImg, HttpUtils.GetJson<AdImagesBean>(url).Urls);
+                    adImgTimerState.Filepaths = HttpUtils.GetFiles(FileUtils.ResPathsEnum.AdImg, urls, null);
 
                     Timer adImgTimer = new Timer(AdImgTimerCallBack, adImgTimerState, 0, AD_IMG_TIMER_INTERVAL);
                     adImgTimerState.MainTimer = adImgTimer;
@@ -357,23 +236,20 @@ namespace WechatPrinter
 
         #region 获得并更新广告视频
         private bool adVidInit = false;
-        private static AdVideosBean adVidLastBean = null;
+        private static StringCollection adVidFilepaths = null;
         private int adVidCounter = 0;
-        public void ShowAdVid(string url, ILoadStage stage)
+        public void ShowAdVid(StringCollection urls, ILoadStage stage)
         {
             BackgroundRun(delegate
             {
                 try
                 {
-                    AdVideosBean bean = HttpUtils.GetJson<AdVideosBean>(url);
                     bool flag = true;
-                    if (adVidLastBean != null && bean.Urls.Count > 0 && bean.Urls.Count == adVidLastBean.Urls.Count)
+                    if (adVidFilepaths != null && adVidFilepaths.Count > 0 && adVidFilepaths.Count == urls.Count)
                     {
-                        StringCollection last = adVidLastBean.Urls;
-                        StringCollection now = bean.Urls;
-                        for (int i = 0; i < (last.Count >= now.Count ? now.Count : last.Count); i++)
+                        for (int i = 0; i < (adVidFilepaths.Count >= urls.Count ? urls.Count : adVidFilepaths.Count); i++)
                         {
-                            if (last[i].Equals(now[i].Substring(now[i].LastIndexOf("/") + 1)))
+                            if (adVidFilepaths[i].Equals(urls[i].Substring(urls[i].LastIndexOf("/") + 1)))
                             {
                                 flag = false;
                                 break;
@@ -382,12 +258,11 @@ namespace WechatPrinter
                     }
                     if (flag)
                     {
-                        StringCollection filepaths = HttpUtils.GetFiles(FileUtils.ResPathsEnum.AdVid, bean.Urls);
+                        StringCollection filepaths = HttpUtils.GetFiles(FileUtils.ResPathsEnum.AdVid, urls, null);
                         adVidCounter = 0;
                         if (filepaths.Count > 0)
                         {
-                            adVidLastBean = bean;
-                            adVidLastBean.Urls = filepaths;
+                            adVidFilepaths = filepaths;
                             AdVidEnded(null, null);
                         }
                         if (!adVidInit)
@@ -410,7 +285,7 @@ namespace WechatPrinter
 
         public void AdVidEnded(Object o, EventArgs a)
         {
-            StringCollection filepaths = adVidLastBean.Urls;
+            StringCollection filepaths = adVidFilepaths;
             if (adVidCounter == filepaths.Count)
                 adVidCounter = 0;
             Uri uri = new Uri(filepaths[adVidCounter++]);
@@ -422,23 +297,20 @@ namespace WechatPrinter
         #endregion
 
         #region 获得并更新验证码
-        public void ShowCaptcha(string captcha)
+        public void ShowCaptcha(int captcha)
         {
-            if (captcha != null && !captcha.Equals(String.Empty))
+            page.Dispatcher.BeginInvoke(new Action(delegate
             {
-                page.Dispatcher.BeginInvoke(new Action(delegate
+                if (captcha != -1)
                 {
-                    try
-                    {
-                        page.textBlock_captcha.Text = captcha;
-                    }
-                    catch (Exception ex)
-                    {
-                        Console.WriteLine("[ShowCaptcha Error]");
-                        Console.WriteLine(ex.Message);
-                    }
-                }));
-            }
+                    page.textBlock_captcha.Text = captcha.ToString();
+                }
+                else
+                {
+                    page.textBlock_captcha.Text = "服务器出错";
+                }
+
+            }));
         }
         #endregion
 
@@ -515,39 +387,37 @@ namespace WechatPrinter
         }
         public void PrinterCompeleted()
         {
+            Console.WriteLine("Printer Compelete");
             HidePrintImg();
+            SendPrintSuccess();
         }
         private void PrintImg(string filepath)
         {
             PrinterUtils.Print(filepath);
         }
         #endregion
-    }
 
-    #region Support Classes
-    #region JsonBean
-    public class AdImagesBean
-    {
-        public StringCollection Urls { get; set; }
+        #region Support Classes
+        #region JsonBean
+        public class PrintImgBean
+        {
+            public string ImgUrl { get; set; }
+        }
+        public class PrintStatusBean
+        {
+            public int Status { get; set; }
+            public int Captcha { get; set; }
+        }
+        #endregion
+        #region TimerState
+        public class TimerState
+        {
+            public bool Switcher = true;
+            public int Counter = 0;
+            public Timer MainTimer;
+            public StringCollection Filepaths;
+        }
+        #endregion
+        #endregion
     }
-    public class AdVideosBean
-    {
-        public StringCollection Urls { get; set; }
-    }
-    public class PrintImgBean
-    {
-        public String Url { get; set; }
-    }
-    #endregion
-    #region TimerState
-    class TimerState
-    {
-        public bool Switcher = true;
-        public int Counter = 0;
-        public Timer MainTimer;
-        public StringCollection Filepaths;
-    }
-    #endregion
-
-    #endregion
 }

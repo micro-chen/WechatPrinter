@@ -13,11 +13,23 @@ namespace WechatPrinter.Support
     public class HttpUtils
     {
 
-        public static WebResponse DoGet(string url)
+        public static WebResponse DoGet(string url, Dictionary<string, string> param)
         {
+            if (url == null || url.Equals(""))
+            {
+                throw new ArgumentException();
+            }
             try
             {
-                WebRequest request = WebRequest.Create(url);
+                StringBuilder sb = new StringBuilder(url);
+                sb.Append("?");
+                sb.Append(WechatPrinterConf.ParamKeys.Id).Append("=").Append(WechatPrinterConf.Id).Append("&");
+                sb.Append(WechatPrinterConf.ParamKeys.Token).Append("=").Append(WechatPrinterConf.Token);
+                sb.Append(EncodeParamFromMap(param));
+
+                Console.WriteLine("DoGet Url: " + sb.ToString());
+                
+                WebRequest request = WebRequest.Create(sb.ToString());
                 request.Timeout = 10 * 1000;
                 request.Method = "GET";
                 return request.GetResponse();
@@ -30,11 +42,11 @@ namespace WechatPrinter.Support
 
         }
 
-        public static string GetText(string url)
+        public static string GetText(string url, Dictionary<string, string> param)
         {
             try
             {
-                using (WebResponse response = DoGet(url))
+                using (WebResponse response = DoGet(url, param))
                 {
                     using (Stream stream = response.GetResponseStream())
                     {
@@ -53,14 +65,17 @@ namespace WechatPrinter.Support
             }
         }
 
-        public static T GetJson<T>(string url)
+        public static T GetJson<T>(string url, Dictionary<string, string> param)
         {
             T bean = default(T);
             try
             {
-                string text = GetText(url);
-                Console.WriteLine("Get Json: "+ text);
-                bean = new JavaScriptSerializer().Deserialize<T>(text);
+                string text = GetText(url, param);
+                Console.WriteLine("Get Json: " + text);
+                if (text != null && !text.Equals(String.Empty))
+                {
+                    bean = new JavaScriptSerializer().Deserialize<T>(text);
+                }
             }
             catch (Exception)
             {
@@ -70,12 +85,13 @@ namespace WechatPrinter.Support
             return bean;
         }
 
-        public static string GetFile(FileUtils.ResPathsEnum path, string url)
+        public static string GetFile(FileUtils.ResPathsEnum path, string url, Dictionary<string, string> param)
         {
             string filename = url.Substring(url.LastIndexOf("/") + 1);
             try
             {
-                using (Stream stream = DoGet(url).GetResponseStream())
+                Console.WriteLine("GetFile: " + path + filename);
+                using (Stream stream = DoGet(url, param).GetResponseStream())
                 {
                     return FileUtils.SaveFile(stream, path, filename);
                 }
@@ -87,15 +103,14 @@ namespace WechatPrinter.Support
             }
         }
 
-        public static StringCollection GetFiles(FileUtils.ResPathsEnum path, StringCollection urls)
+        public static StringCollection GetFiles(FileUtils.ResPathsEnum path, StringCollection urls, Dictionary<string, string> param)
         {
             StringCollection filepaths = new StringCollection();
             foreach (string url in urls)
             {
                 try
                 {
-                    //Console.WriteLine("File Url: " + url + "\t");
-                    string filepath = HttpUtils.GetFile(FileUtils.ResPathsEnum.AdImg, url);
+                    string filepath = HttpUtils.GetFile(path, url, param);
                     if (!filepath.Equals(String.Empty))
                         filepaths.Add(filepath);
                 }
@@ -108,5 +123,20 @@ namespace WechatPrinter.Support
             return filepaths;
         }
 
+        private static string EncodeParamFromMap(Dictionary<string, string> param)
+        {
+            if (param == null || param.Count == 0)
+                return "";
+
+            StringBuilder sb = new StringBuilder();
+
+            foreach (var item in param)
+            {
+                sb.Append("&");
+                sb.Append(System.Web.HttpUtility.UrlEncode(item.Key, Encoding.UTF8)).Append("=").Append(System.Web.HttpUtility.UrlEncode(item.Value, Encoding.UTF8));
+            }
+
+            return sb.ToString();
+        }
     }
 }
