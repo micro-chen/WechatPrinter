@@ -22,7 +22,7 @@ using System.Windows.Threading;
 
 namespace WechatPrinter
 {
-    public class WechatPrinterServer : IPrinterStatus
+    public class WechatPrinterServer : IPrinterStatus,IDisposable
     {
 
         private void BackgroundRun(Action action)
@@ -136,8 +136,33 @@ namespace WechatPrinter
         private MainPage page;
         private const double FADE_TIME = 0.5 * 1000;
         private const int PRINT_IMG_DECODE_WIDTH = 600;
+        private const int QR_IMG_DECODE_WIDTH = 350;
         private DoubleAnimation fadeInAnim = new DoubleAnimation(1d, TimeSpan.FromMilliseconds(FADE_TIME));
         private DoubleAnimation fadeOutAnim = new DoubleAnimation(0d, TimeSpan.FromMilliseconds(FADE_TIME));
+
+        #region 更新二维码
+        public void ShowQRImg(string url)
+        {
+            BackgroundRun(delegate {
+                try
+                {
+                    string filepath = HttpUtils.GetFile(FileUtils.ResPathsEnum.QR, url, null);
+                    if (filepath != null && !filepath.Equals(String.Empty))
+                    {
+                        BitmapImage bi = FileUtils.LoadImage(filepath, QR_IMG_DECODE_WIDTH);
+                        page.Dispatcher.BeginInvoke(new Action(delegate {
+                            page.image_QR.Source = bi;
+                        }));
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine("ShowQRImg Error");
+                    Console.WriteLine(ex.StackTrace);
+                }
+            });
+        }
+        #endregion
 
         #region 更新打印图片
         private void ShowPrintImg(string filepath)
@@ -164,7 +189,7 @@ namespace WechatPrinter
 
         #region 获得并更新广告图片
         private const int AD_IMG_TIMER_INTERVAL = 15 * 1000;
-        private const int AD_IMG_DECODE_WIDTH = 700;
+        private const int AD_IMG_DECODE_WIDTH = 300;
         private const int AD_IMG_WAIT_BEFORE_IN = 300;
         private const int AD_IMG_FADE_TIME = 1 * 1000;
         private bool adImgTimerFlag;
@@ -200,6 +225,7 @@ namespace WechatPrinter
         private void AdImgTimerCallBack(Object state)
         {
             TimerState s = (TimerState)state;
+            BitmapImage bi = FileUtils.LoadImage(s.Filepaths[s.Counter++], AD_IMG_DECODE_WIDTH);
             if (adImgTimerFlag)
             {
                 page.Dispatcher.BeginInvoke(new Action(delegate
@@ -209,17 +235,17 @@ namespace WechatPrinter
                     DoubleAnimation adFadeOutAnim = new DoubleAnimation(0d, TimeSpan.FromMilliseconds(AD_IMG_FADE_TIME));
                     adFadeOutAnim.Completed += (o, e) =>
                     {
-                        page.mediaElement_ad2.Source = new Uri(s.Filepaths[s.Counter++]);
+                        page.image_ad1.Source = bi;
                         DispatcherTimer timer = new DispatcherTimer();
                         timer.Tick += (oo, ee) =>
                         {
                             ((DispatcherTimer)oo).Stop();
-                            page.mediaElement_ad2.BeginAnimation(MediaElement.OpacityProperty, adFadeInAnim);
+                            page.image_ad1.BeginAnimation(MediaElement.OpacityProperty, adFadeInAnim);
                         };
                         timer.Interval = new TimeSpan(0, 0, 0, 0, AD_IMG_WAIT_BEFORE_IN);
                         timer.Start();
                     };
-                    page.mediaElement_ad2.BeginAnimation(MediaElement.OpacityProperty, adFadeOutAnim);
+                    page.image_ad1.BeginAnimation(MediaElement.OpacityProperty, adFadeOutAnim);
                 }));
             }
             else
@@ -419,5 +445,13 @@ namespace WechatPrinter
         }
         #endregion
         #endregion
+
+        public void Dispose()
+        {
+            if(printImgTimer!=null)
+                printImgTimer.Dispose();
+            adImgTimerFlag = false;
+            errorTimerFlag = false;
+        }
     }
 }

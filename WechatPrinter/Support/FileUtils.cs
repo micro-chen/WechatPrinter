@@ -17,8 +17,8 @@ namespace WechatPrinter.Support
 
         private static string RootPath = AppDomain.CurrentDomain.BaseDirectory;
         private static string ResPath = RootPath + "res\\";
-        public enum ResPathsEnum { PrintImg, AdImg, AdVid };
-        public static string[] ResPaths = { ResPath + "print\\", ResPath + "ad\\img\\", ResPath + "ad\\vid\\" };
+        public enum ResPathsEnum { PrintImg, AdImg, AdVid, QR };
+        public static string[] ResPaths = { ResPath + "print\\", ResPath + "ad\\img\\", ResPath + "ad\\vid\\" , ResPath+"QR\\"};
         public const int FOLDER_SIZE_LIMIT = 300;
 
         public static BitmapImage LoadImage(string filepath, int decodeWidth)

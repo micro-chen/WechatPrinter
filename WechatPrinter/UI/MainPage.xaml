@@ -8,100 +8,128 @@
 	Title="微信打印" KeyDown="page_main_KeyDown" Loaded="page_main_Loaded" FontFamily="Source Han Sans CN Regular">
 
     <Page.Background>
-        <LinearGradientBrush EndPoint="0,0" StartPoint="0.5,0.7">
+        <!--<LinearGradientBrush EndPoint="0,0" StartPoint="0.5,0.7">
             <GradientStop Color="#FF03A9F4"/>
             <GradientStop Color="#FF0277BD" Offset="1"/>
-        </LinearGradientBrush>
+        </LinearGradientBrush>-->
+        <ImageBrush ImageSource="pack://application:,,,/Resource/Image/background.jpg" Stretch="Fill"/>
     </Page.Background>
 
-    <Grid Margin="20,10,10,10" HorizontalAlignment="Center">
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition />
-            <ColumnDefinition Width="20" />
-            <ColumnDefinition Width="450" />
-        </Grid.ColumnDefinitions>
-
-        <Grid Grid.Column="0" Margin="0,20,0,0">
+    <Border Margin="15" Background="#9960ccfd" CornerRadius="15">
+        <Grid HorizontalAlignment="Center">
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="350" />
             </Grid.ColumnDefinitions>
-            <Grid.RowDefinitions>
-                <RowDefinition Height="500" />
-                <RowDefinition Height="20" />
-                <RowDefinition Height="*" />
-            </Grid.RowDefinitions>
 
-            <Border SnapsToDevicePixels="True" Grid.Row="0" Grid.Column="0">
-                <MediaElement x:Name="mediaElement_ad" Visibility="Hidden" LoadedBehavior="Manual" UnloadedBehavior="Manual" MediaEnded="mediaElement_AdVideo_MediaEnded" />
-                <Border.Effect>
-                    <DropShadowEffect Color="#FF795548" BlurRadius="15" ShadowDepth="0" Opacity="0.5" Direction="0" />
-                </Border.Effect>
-            </Border>
+            <Grid Grid.Column="0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="330" />
+                    <ColumnDefinition Width="330" />
+                    <ColumnDefinition Width="330" />
+                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="500" />
+                    <RowDefinition Height="*" />
+                </Grid.RowDefinitions>
 
-            <Border SnapsToDevicePixels="True" Grid.Row="0" Grid.Column="0">
-                <Label x:Name="label_downloading" Opacity="0" SnapsToDevicePixels="True" Grid.Row="0"  Grid.Column="0" Content="已收到请求，下载图片..." Foreground="#FFE1F5FE" FontSize="36" HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                <Border.Effect>
-                    <DropShadowEffect Color="#FF000000" BlurRadius="55" ShadowDepth="0" Opacity="1" Direction="0" />
-                </Border.Effect>
-            </Border>
+                <Border SnapsToDevicePixels="True" Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="5" Margin="10,10,10,0">
+                    <Label x:Name="label_downloading" Opacity="0" SnapsToDevicePixels="True" Grid.Row="0"  Grid.Column="0" Content="已收到请求，下载图片..." Foreground="#FFE1F5FE" FontSize="36" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    <Border.Effect>
+                        <DropShadowEffect Color="#FF000000" BlurRadius="55" ShadowDepth="0" Opacity="1" Direction="0" />
+                    </Border.Effect>
+                </Border>
 
 
-            <Border SnapsToDevicePixels="True" Grid.Row="0" Grid.Column="0">
-                <Image x:Name="image_print" SnapsToDevicePixels="True" Opacity="0" Margin="2,0,-2,0"></Image>
-                <Border.Effect>
-                    <DropShadowEffect Color="#FF795548" BlurRadius="15" ShadowDepth="0" Opacity="0.5" Direction="0" />
-                </Border.Effect>
-            </Border>
+                <Border SnapsToDevicePixels="True" Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="5" Margin="10,10,20,0">
+                    <Image x:Name="image_print" SnapsToDevicePixels="True" Opacity="0" />
+                    <Border.Effect>
+                        <DropShadowEffect Color="#FF795548" BlurRadius="15" ShadowDepth="0" Opacity="0.5" Direction="0" />
+                    </Border.Effect>
+                </Border>
 
-            <!--<Border SnapsToDevicePixels="True" Grid.Row="0" Grid.Column="0">
-                <Image x:Name="image_print2" SnapsToDevicePixels="True" Opacity="0"></Image>
-                <Border.Effect>
-                    <DropShadowEffect Color="#FF795548" BlurRadius="15" ShadowDepth="0" Opacity="0.5" Direction="0" />
-                </Border.Effect>
-            </Border>-->
+                <Border SnapsToDevicePixels="True" Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="5" Margin="10,10,20,0">
+                    <MediaElement Stretch="Fill" x:Name="mediaElement_ad" Opacity="0.2" LoadedBehavior="Manual" UnloadedBehavior="Manual" MediaEnded="mediaElement_AdVideo_MediaEnded" />
+                    <Border.Effect>
+                        <DropShadowEffect Color="#FF795548" BlurRadius="15" ShadowDepth="0" Opacity="0.5" Direction="0" />
+                    </Border.Effect>
+                </Border>
 
-            <Border SnapsToDevicePixels="True" Grid.Row="2" Grid.Column="0">
-                <MediaElement x:Name="mediaElement_ad2" Visibility="Hidden" LoadedBehavior="Manual" UnloadedBehavior="Manual" />
-                <Border.Effect>
-                    <DropShadowEffect Color="#FF795548" BlurRadius="15" ShadowDepth="0" Opacity="0.5" Direction="0" />
-                </Border.Effect>
-            </Border>
+                <Border SnapsToDevicePixels="True" Grid.Row="2" Grid.Column="0" Margin="10,20,10,10">
+                    <Image Source="D:\VS\projects\WechatPrinter\WechatPrinter\bin\Debug\res\ad\img\6cf8a22bjw1eodufymcyqj218g0tndqr.jpg" Stretch="Fill" x:Name="image_ad1" Opacity="0.2"/>
+                    <Border.Effect>
+                        <DropShadowEffect Color="#FF795548" BlurRadius="15" ShadowDepth="0" Opacity="0.5" Direction="0" />
+                    </Border.Effect>
+                </Border>
+
+                <Border SnapsToDevicePixels="True" Grid.Row="2" Grid.Column="1" Margin="10,20,10,10">
+                    <Image Source="D:\VS\projects\WechatPrinter\WechatPrinter\bin\Debug\res\ad\img\6cf8a22bjw1eodufymcyqj218g0tndqr.jpg" Stretch="Fill" x:Name="image_ad2" Opacity="0.2" />
+                    <Border.Effect>
+                        <DropShadowEffect Color="#FF795548" BlurRadius="15" ShadowDepth="0" Opacity="0.5" Direction="0" />
+                    </Border.Effect>
+                </Border>
+
+                <Border SnapsToDevicePixels="True" Grid.Row="2" Grid.Column="2" Margin="10,20,20,10">
+                    <Image Source="D:\VS\projects\WechatPrinter\WechatPrinter\bin\Debug\res\ad\img\6cf8a22bjw1eodufymcyqj218g0tndqr.jpg" Stretch="Fill" x:Name="image_ad3" Opacity="0.2" />
+                    <Border.Effect>
+                        <DropShadowEffect Color="#FF795548" BlurRadius="15" ShadowDepth="0" Opacity="0.5" Direction="0" />
+                    </Border.Effect>
+                </Border>
+            </Grid>
+
+            <Grid Grid.Column="2" Margin="0,22,10,10">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="350" />
+                    <RowDefinition Height="150" />
+                    <RowDefinition Height="120" />
+                    <RowDefinition Height="2*" />
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+
+                <Border SnapsToDevicePixels="True" Grid.Row="0" Grid.Column="0" Width="300" Height="300" VerticalAlignment="Top" Margin="0,0,0,0">
+                    <Image x:Name="image_QR" />
+                    <Border.Background>
+                        <RadialGradientBrush 
+                              GradientOrigin="0.5,0.5" Center="0.5,0.5" 
+                              RadiusX="0.5" RadiusY="0.5">
+                            <GradientStop Color="White" Offset="0.2" />
+                            <GradientStop Color="Transparent" Offset="1" />
+                        </RadialGradientBrush>
+                    </Border.Background>
+                    <Border.Effect>
+                        <DropShadowEffect Color="#FF795548" BlurRadius="10" ShadowDepth="0" Opacity="0.2" Direction="0" />
+                    </Border.Effect>
+                </Border>
+
+                <Border SnapsToDevicePixels="True" Grid.Row="1" Grid.Column="0">
+                    <StackPanel>
+                        <Label Content="扫码关注" Foreground="#FFE1F5FE" FontSize="50" HorizontalAlignment="Center"/>
+                        <Label Content="马上打印喜爱的图片" Foreground="#FFE1F5FE" FontSize="36" HorizontalAlignment="Center" />
+                    </StackPanel>
+                    <Border.Effect>
+                        <DropShadowEffect Color="#FF77C6EA" BlurRadius="30" ShadowDepth="0" Opacity="0.5" Direction="0" />
+                    </Border.Effect>
+                </Border>
+
+                <Border SnapsToDevicePixels="True" Grid.Row="2" Grid.Column="0" Margin="0,10,0,0">
+                    <Label x:Name="label_captcha" Foreground="#FFEEFF41" FontSize="50" HorizontalAlignment="Center" Opacity="0">
+                        <TextBlock x:Name="textBlock_captcha" TextDecorations="Underline">
+                        ----
+                        </TextBlock>
+                    </Label>
+                    <Border.Effect>
+                        <DropShadowEffect Color="#FFAEEA00" BlurRadius="15" ShadowDepth="0" Opacity="1" Direction="0" />
+                    </Border.Effect>
+                </Border>
+
+
+                <Label x:Name="label_error" Content="Error" Opacity="0" Foreground="#FFFF5252" FontSize="36" Grid.Row="3" Grid.Column="0" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                <!--<Label Content="V1.0 Copyright © 深米科技" Foreground="#FFE1F5FE" FontSize="22" HorizontalAlignment="Center" Grid.Row="4"  Grid.Column="0" VerticalAlignment="Bottom"/>-->
+                <Image SnapsToDevicePixels="True" HorizontalAlignment="Center" Grid.Row="4"  Grid.Column="0" VerticalAlignment="Bottom" Source="pack://application:,,,/Resource/Image/smkj.png" Stretch="Uniform"/>
+            </Grid>
         </Grid>
-
-        <Grid Grid.Column="2" Margin="0,20,0,0">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="*" />
-            </Grid.ColumnDefinitions>
-            <Grid.RowDefinitions>
-                <RowDefinition Height="300" />
-                <RowDefinition Height="120" />
-                <RowDefinition Height="150" />
-                <RowDefinition Height="2*" />
-                <RowDefinition Height="*"/>
-            </Grid.RowDefinitions>
-
-            <Border SnapsToDevicePixels="True" Grid.Row="0" Grid.Column="0">
-                <MediaElement x:Name="mediaElement_QR" Visibility="Hidden"/>
-                <Border.Effect>
-                    <DropShadowEffect Color="#FF795548" BlurRadius="30" ShadowDepth="0" Opacity="0.5" Direction="0" />
-                </Border.Effect>
-            </Border>
-            <Border SnapsToDevicePixels="True" Grid.Row="1" Grid.Column="0" Margin="0,10,0,0">
-                <Label x:Name="label_captcha" Foreground="#FFEEFF41" FontSize="50" HorizontalAlignment="Center" Visibility="Hidden">
-                    <TextBlock x:Name="textBlock_captcha" TextDecorations="Underline">
-                        1237
-                    </TextBlock>
-                </Label>
-                <Border.Effect>
-                    <DropShadowEffect Color="#FFAEEA00" BlurRadius="15" ShadowDepth="0" Opacity="1" Direction="0" />
-                </Border.Effect>
-            </Border>
-            <StackPanel Grid.Row="2"  Grid.Column="0" Margin="0,0,0,0">
-                <Label Content="扫码关注" Foreground="#FFE1F5FE" FontSize="50" HorizontalAlignment="Center"/>
-                <Label Content="马上打印喜爱的图片" Foreground="#FFE1F5FE" FontSize="36" HorizontalAlignment="Center" />
-            </StackPanel>
-            <Label x:Name="label_error" Opacity="0" Foreground="#FFFF5252" FontSize="36" Grid.Row="3" Grid.Column="0" HorizontalAlignment="Center" VerticalAlignment="Center"/>
-            <Label Content="V1.0 Copyright © 深米科技" Foreground="#FFE1F5FE" FontSize="22" HorizontalAlignment="Center" Grid.Row="4"  Grid.Column="0" VerticalAlignment="Bottom"/>
-        </Grid>
-    </Grid>
+    </Border>
 </Page>

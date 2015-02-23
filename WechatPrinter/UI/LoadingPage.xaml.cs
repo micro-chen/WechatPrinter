@@ -45,12 +45,6 @@ namespace WechatPrinter
             int retry = 0;
             label_loading.Content = "连接微信打印服务器...";
 
-            //page = new MainPage();
-            //WechatPrinterServer server = new WechatPrinterServer(page);
-            //page.Server = server;
-            //status.LoadCompleted(page);
-            //return;
-
             BackgroundWorker bw = new BackgroundWorker();
             bw.DoWork += (o, ee) =>
             {
@@ -95,18 +89,18 @@ namespace WechatPrinter
                     page.Server = server;
 
                     server.ShowAdVid(WechatPrinterConf.AdVidUrls, this);
-                    page.mediaElement_ad.Visibility = Visibility.Visible;
+                    page.mediaElement_ad.Opacity = 1d;
                     page.mediaElement_ad.Play();
 
                     server.ShowAdImg(WechatPrinterConf.AdImgUrls, this);
-                    page.mediaElement_ad2.Visibility = Visibility.Visible;
-                    page.mediaElement_ad2.Play();
+                    page.image_ad1.Opacity = 1d;
+                    page.image_ad2.Opacity = 1d;
+                    page.image_ad3.Opacity = 1d;
 
-                    //page.mediaElement_QR.Source = new Uri(WechatPrinterConf.QRCodeUrl);
-                    page.mediaElement_QR.Visibility = Visibility.Visible;
+                    server.ShowQRImg(WechatPrinterConf.QRCodeUrl);
 
                     server.ShowCaptcha(WechatPrinterConf.Captcha);
-                    page.label_captcha.Visibility = Visibility.Visible;
+                    page.label_captcha.Opacity = 1d;
 
                     Stage(0);
                 }
@@ -114,7 +108,7 @@ namespace WechatPrinter
             bw.RunWorkerAsync();
         }
 
-        private const int LOADING_WAIT_TIME = 0 * 1000;
+        private const int LOADING_WAIT_TIME = 3 * 1000;
         private static int sum = 0;
         public void Stage(int stage)
         {
