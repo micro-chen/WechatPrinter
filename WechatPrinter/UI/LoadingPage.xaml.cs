@@ -42,7 +42,7 @@ namespace WechatPrinter
             Console.WriteLine("Page Init");
 
             InfoBean info = null;
-            int retry = 0;
+            //int retry = 0;
             label_loading.Content = "连接微信打印服务器...";
 
             BackgroundWorker bw = new BackgroundWorker();
@@ -54,8 +54,9 @@ namespace WechatPrinter
                 }
                 catch (Exception ex)
                 {
-                    retry++;
-                    Console.WriteLine("[LoadingPage:Get InfoBean Error {0}]", retry);
+                    //retry++;
+                    //Console.WriteLine("[LoadingPage:Get InfoBean Error {0}]", retry);
+                    Console.WriteLine("LoadingPage:Get InfoBean Error");
                     Console.WriteLine(ex.Message);
                     ee.Result = null;
                 }
@@ -64,19 +65,19 @@ namespace WechatPrinter
             {
                 if (ee.Result == null)
                 {
-                    StringBuilder sb = new StringBuilder("重试连接微信打印服务器...[");
-                    sb.Append(retry).Append("/3]");
-                    label_loading.Content = sb.ToString();
-                    if (retry < 3)
-                    {
-                        bw.RunWorkerAsync();
-                    }
-                    else
-                    {
+                    //StringBuilder sb = new StringBuilder("重试连接微信打印服务器...[");
+                    //sb.Append(retry).Append("/3]");
+                    //label_loading.Content = sb.ToString();
+                    //if (retry < 3)
+                    //{
+                    //    bw.RunWorkerAsync();
+                    //}
+                    //else
+                    //{
                         Window window = (MainWindow)Window.GetWindow(this);
                         MessageBox.Show("连接微信打印服务器错误", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
                         window.Close();
-                    }
+                    //}
                 }
                 else
                 {
@@ -88,6 +89,8 @@ namespace WechatPrinter
                     WechatPrinterServer server = new WechatPrinterServer(page);
                     page.Server = server;
 
+                    server.ShowQRImg(WechatPrinterConf.QRCodeUrl);
+
                     server.ShowAdVid(WechatPrinterConf.AdVidUrls, this);
                     page.mediaElement_ad.Opacity = 1d;
                     page.mediaElement_ad.Play();
@@ -97,7 +100,6 @@ namespace WechatPrinter
                     page.image_ad2.Opacity = 1d;
                     page.image_ad3.Opacity = 1d;
 
-                    server.ShowQRImg(WechatPrinterConf.QRCodeUrl);
 
                     server.ShowCaptcha(WechatPrinterConf.Captcha);
                     page.label_captcha.Opacity = 1d;
@@ -108,7 +110,7 @@ namespace WechatPrinter
             bw.RunWorkerAsync();
         }
 
-        private const int LOADING_WAIT_TIME = 3 * 1000;
+        private const int LOADING_WAIT_TIME = 0 * 1000;
         private static int sum = 0;
         public void Stage(int stage)
         {

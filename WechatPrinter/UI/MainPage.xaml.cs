@@ -51,8 +51,7 @@ namespace WechatPrinter
             else if (e.Key == Key.Enter)
             {
                 Console.WriteLine("Enter");
-
-                PrinterUtils.Print("D:\\VS\\projects\\WechatPrinter\\WechatPrinter\\bin\\Debug\\res\\print\\1.JPG");
+                server.GetPrintImg(WechatPrinterConf.PrintImgUrl);
             }
         }
 

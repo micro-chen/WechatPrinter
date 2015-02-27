@@ -19,27 +19,40 @@ namespace WechatPrinter.Support
             {
                 throw new ArgumentException();
             }
-            try
-            {
-                StringBuilder sb = new StringBuilder(url);
-                sb.Append("?");
-                sb.Append(WechatPrinterConf.ParamKeys.Id).Append("=").Append(WechatPrinterConf.Id).Append("&");
-                sb.Append(WechatPrinterConf.ParamKeys.Token).Append("=").Append(WechatPrinterConf.Token);
-                sb.Append(EncodeParamFromMap(param));
 
-                Console.WriteLine("DoGet Url: " + sb.ToString());
-                
-                WebRequest request = WebRequest.Create(sb.ToString());
-                request.Timeout = 10 * 1000;
-                request.Method = "GET";
-                return request.GetResponse();
-            }
-            catch (Exception)
-            {
-                Console.WriteLine("[HttpUtils: DoGet Error]");
-                throw;
-            }
+            int retry = WechatPrinterConf.HttpRetryTimes;
 
+            while (retry > 0)
+            {
+                WebResponse response = null;
+                try
+                {
+                    StringBuilder sb = new StringBuilder(url);
+                    sb.Append("?");
+                    sb.Append(WechatPrinterConf.ParamKeys.Id).Append("=").Append(WechatPrinterConf.Id).Append("&");
+                    sb.Append(WechatPrinterConf.ParamKeys.Token).Append("=").Append(WechatPrinterConf.Token);
+                    sb.Append(EncodeParamFromMap(param));
+
+                    Console.WriteLine("DoGet Url: " + sb.ToString());
+
+                    WebRequest request = WebRequest.Create(sb.ToString());
+                    request.Timeout = WechatPrinterConf.HttpTimeout;
+                    request.Method = "GET";
+                    response = request.GetResponse();
+                    return response;
+                }
+                catch (Exception)
+                {
+                    retry--;
+                    Console.WriteLine("[HttpUtils: DoGet Error: Retry[{0}/{1}]", WechatPrinterConf.HttpRetryTimes - retry, WechatPrinterConf.HttpRetryTimes);
+                    if (retry == 0)
+                    {
+                        Console.WriteLine("[HttpUtils: DoGet Error: Exit]");
+                        throw;
+                    }
+                }
+            }
+            throw new Exception();
         }
 
         public static string GetText(string url, Dictionary<string, string> param)
@@ -90,7 +103,7 @@ namespace WechatPrinter.Support
             string filename = url.Substring(url.LastIndexOf("/") + 1);
             try
             {
-                Console.WriteLine("GetFile: " + path + filename);
+                Console.WriteLine("GetFile: [" + path +"] "+ filename);
                 using (Stream stream = DoGet(url, param).GetResponseStream())
                 {
                     return FileUtils.SaveFile(stream, path, filename);

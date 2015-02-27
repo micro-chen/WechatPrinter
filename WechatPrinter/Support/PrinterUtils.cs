@@ -147,45 +147,23 @@ namespace WechatPrinter.Support
                         //TODO
                         isPrinting = false;
                     }
+
                 }
                 else
                 {
-                    //CheckError();
-                    //TODO
+                    //printerStatus.PrinterError(printQueue.QueueStatus);
+
+                    //TODO 打印机错误
+                    Console.WriteLine("Printer Error: {0}", printQueue.QueueStatus);
                 }
                 Thread.Sleep(PRINTER_CHECK_INTERVAL);
-            }
-        }
-
-
-        private static void CheckError()
-        {
-            if (printQueue.IsOutOfPaper || printQueue.IsManualFeedRequired)
-            {
-                printerStatus.PrinterError(ErrorUtils.Error.PrinterOutOfPaper);
-            }
-            else if (printQueue.IsPaperJammed)
-            {
-                printerStatus.PrinterError(ErrorUtils.Error.PrinterPaperJammed);
-            }
-            else if (printQueue.IsTonerLow)
-            {
-                printerStatus.PrinterError(ErrorUtils.Error.PrinterOutOfInk);
-            }
-            else if (printQueue.IsDoorOpened)
-            {
-                printerStatus.PrinterError(ErrorUtils.Error.PrinterDoorOpened);
-            }
-            else if (printQueue.IsOffline || printQueue.IsNotAvailable)
-            {
-                printerStatus.PrinterError(ErrorUtils.Error.PrinterUnavailable);
             }
         }
     }
 
     public interface IPrinterStatus
     {
-        void PrinterError(ErrorUtils.Error error);
+        void PrinterError(PrintQueueStatus error);
         void PrinterAvailable();
         void PrinterCompeleted();
     }

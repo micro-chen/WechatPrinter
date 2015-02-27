@@ -13,12 +13,12 @@ namespace WechatPrinter.Support
         private const string WECHAT_PRINTER_TOKEN = ""; //TODO token
 
         private const string INIT_URL = "http://joewoo.pw/printer/info.php";
-        private const string PRINT_IMG_URL = ""; //TODO 打印接口
+        private const string PRINT_IMG_URL = "http://joewoo.pw/printer/printimg.php"; //TODO 打印接口
         private const string PRINT_IMG_CALLBACK_URL = ""; //TOFO 打印返回接口
 
         //TODO 打印机名
-        //private const string PRINTER_NAME = "Brother DCP-1510 series"; 
-        private static string PRINTER_NAME = "Microsoft XPS Document Writer";
+        private const string PRINTER_NAME = "Brother DCP-1510 series";
+        //private static string PRINTER_NAME = "Microsoft XPS Document Writer";
 
         private const double PRINT_WIDTH = 1205;
         private const double PRINT_HEIGHT = 1795;
@@ -31,6 +31,11 @@ namespace WechatPrinter.Support
         private static StringCollection adVidUrls = null;
         private static string qrCodeUrl = null;
         private static int captcha = -1;
+
+        private static bool isPrinting = false;
+
+        private const int HTTP_RETRY_TIMES = 3;
+        private const int HTTP_TIMTOUT = 10 * 1000;
 
         public static void Init(InfoBean bean)
         {
@@ -58,6 +63,11 @@ namespace WechatPrinter.Support
         public static double PrinterHeight { get { return PRINT_HEIGHT; } }
         public static double ScreenDpi { get { return SCREEN_DPI; } }
         public static int PrintImgInterval { get { return PRINT_IMG_TIMER_INTERVAL; } }
+
+        public static bool IsPrinting { get { return isPrinting; } set { isPrinting = value; } }
+
+        public static int HttpRetryTimes { get { return HTTP_RETRY_TIMES; } }
+        public static int HttpTimeout { get { return HTTP_TIMTOUT; } }
 
         public class ParamKeys
         {

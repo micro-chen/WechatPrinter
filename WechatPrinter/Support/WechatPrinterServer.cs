@@ -50,48 +50,52 @@ namespace WechatPrinter
         #endregion
 
         #region 获得打印图片
-        private void GetPrintImg(Object o)
+        public void GetPrintImg(Object o)
         {
-            BackgroundRun(delegate
+            if (!WechatPrinterConf.IsPrinting)
             {
-                Console.WriteLine("Start to get print images");
-                try
+                BackgroundRun(delegate
                 {
-                    PrintImgBean bean = HttpUtils.GetJson<PrintImgBean>((string)o, null);
-                    if (bean.ImgUrl != null && bean.ImgUrl != String.Empty)
+                    Console.WriteLine("Start to get print images");
+                    try
                     {
-                        ShowDownloading();
-                        try
+                        PrintImgBean bean = HttpUtils.GetJson<PrintImgBean>((string)o, null);
+                        if (bean.ImgUrl != null && !bean.ImgUrl.Equals(String.Empty))
                         {
-                            //string filepath = HttpUtils.GetFile(FileUtils.ResPathsEnum.PrintImg, bean.Url);
-                            string filepath = HttpUtils.GetFile(FileUtils.ResPathsEnum.PrintImg, WechatPrinterConf.PrintImgUrl, null);
-                            if (!filepath.Equals(String.Empty))
+                            WechatPrinterConf.IsPrinting = true;
+                            ShowDownloading();
+                            try
                             {
-                                HideDownloading();
-                                PrintImg(filepath);
-                                ShowPrintImg(filepath);
+                                string filepath = HttpUtils.GetFile(FileUtils.ResPathsEnum.PrintImg, bean.ImgUrl, null);
+                                if (!filepath.Equals(String.Empty))
+                                {
+                                    HideDownloading();
+                                    PrintImg(filepath);
+                                    ShowPrintImg(filepath);
+                                }
                             }
+                            catch (Exception ex)
+                            {
+                                Console.WriteLine("[GetToPrintImg:for Error]");
+                                Console.WriteLine(ex.Message);
+
+                                //TODO 下载出错提示
+                                WechatPrinterConf.IsPrinting = false;
+                                HideDownloading();
+                                ShowError(ErrorUtils.HandleError(ErrorUtils.Error.NetworkFileNotFound));
+                            }
+
+
                         }
-                        catch (Exception ex)
-                        {
-                            Console.WriteLine("[GetToPrintImg:for Error]");
-                            Console.WriteLine(ex.Message);
-
-                            //TODO 下载出错提示
-                            HideDownloading();
-                            ShowError(ErrorUtils.HandleError(ErrorUtils.Error.NetworkFileNotFound));
-                        }
-
-
                     }
-                }
-                catch (Exception ex)
-                {
-                    Console.WriteLine("[GetToPrintImg Error]");
-                    Console.WriteLine(ex.StackTrace);
-                    ShowError(ErrorUtils.HandleError(ErrorUtils.Error.NetworkUnavailable));
-                }
-            });
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine("[GetToPrintImg Error]");
+                        Console.WriteLine(ex.StackTrace);
+                        ShowError(ErrorUtils.HandleError(ErrorUtils.Error.NetworkUnavailable));
+                    }
+                });
+            }
         }
         #endregion
         #region 返回打印状态
@@ -225,27 +229,38 @@ namespace WechatPrinter
         private void AdImgTimerCallBack(Object state)
         {
             TimerState s = (TimerState)state;
-            BitmapImage bi = FileUtils.LoadImage(s.Filepaths[s.Counter++], AD_IMG_DECODE_WIDTH);
+            BitmapImage[] bis = new BitmapImage[3];
+            for(int i =0;i<3;i++)
+            {
+                if (s.Counter == s.Filepaths.Count)
+                    s.Counter = 0;
+                bis[i] = FileUtils.LoadImage(s.Filepaths[s.Counter++], AD_IMG_DECODE_WIDTH);
+            }
+
             if (adImgTimerFlag)
             {
                 page.Dispatcher.BeginInvoke(new Action(delegate
                 {
-                    if (s.Counter == s.Filepaths.Count)
-                        s.Counter = 0;
                     DoubleAnimation adFadeOutAnim = new DoubleAnimation(0d, TimeSpan.FromMilliseconds(AD_IMG_FADE_TIME));
                     adFadeOutAnim.Completed += (o, e) =>
                     {
-                        page.image_ad1.Source = bi;
+                        page.image_ad1.Source = bis[0];
+                        page.image_ad2.Source = bis[1];
+                        page.image_ad3.Source = bis[2];
                         DispatcherTimer timer = new DispatcherTimer();
                         timer.Tick += (oo, ee) =>
                         {
                             ((DispatcherTimer)oo).Stop();
                             page.image_ad1.BeginAnimation(MediaElement.OpacityProperty, adFadeInAnim);
+                            page.image_ad2.BeginAnimation(MediaElement.OpacityProperty, adFadeInAnim);
+                            page.image_ad3.BeginAnimation(MediaElement.OpacityProperty, adFadeInAnim);
                         };
                         timer.Interval = new TimeSpan(0, 0, 0, 0, AD_IMG_WAIT_BEFORE_IN);
                         timer.Start();
                     };
                     page.image_ad1.BeginAnimation(MediaElement.OpacityProperty, adFadeOutAnim);
+                    page.image_ad2.BeginAnimation(MediaElement.OpacityProperty, adFadeOutAnim);
+                    page.image_ad3.BeginAnimation(MediaElement.OpacityProperty, adFadeOutAnim);
                 }));
             }
             else
@@ -311,13 +326,13 @@ namespace WechatPrinter
 
         public void AdVidEnded(Object o, EventArgs a)
         {
-            StringCollection filepaths = adVidFilepaths;
-            if (adVidCounter == filepaths.Count)
+            if (adVidCounter == adVidFilepaths.Count)
                 adVidCounter = 0;
-            Uri uri = new Uri(filepaths[adVidCounter++]);
+            Uri uri = new Uri(adVidFilepaths[adVidCounter++]);
             page.Dispatcher.BeginInvoke(new Action(delegate
             {
                 page.mediaElement_ad.Source = uri;
+                //page.mediaElement_ad.Source = new Uri("C:\\Users\\Joe\\Desktop\\深米游戏.mov");
             }));
         }
         #endregion
@@ -387,23 +402,27 @@ namespace WechatPrinter
         #region 更新正在下载打印图片
         private void ShowDownloading()
         {
+            Console.WriteLine("Show Downloading");
             page.Dispatcher.BeginInvoke(new Action(delegate
             {
-                page.label_downloading.BeginAnimation(Label.OpacityProperty, fadeInAnim);
+                //page.label_downloading.BeginAnimation(Label.OpacityProperty, fadeInAnim);
+                page.label_downloading.Opacity = 1d;
             }));
         }
         private void HideDownloading()
         {
+            Console.WriteLine("Hide Downloading");
             page.Dispatcher.BeginInvoke(new Action(delegate
             {
-                page.label_downloading.BeginAnimation(Label.OpacityProperty, fadeOutAnim);
+                //page.label_downloading.BeginAnimation(Label.OpacityProperty, fadeOutAnim);
+                page.label_downloading.Opacity = 0d;
             }));
         }
         #endregion
         #endregion
 
         #region 打印
-        public void PrinterError(ErrorUtils.Error error)
+        public void PrinterError(PrintQueueStatus error)
         {
             //TODO 打印机错误
         }
@@ -413,7 +432,8 @@ namespace WechatPrinter
         }
         public void PrinterCompeleted()
         {
-            Console.WriteLine("Printer Compelete");
+            Console.WriteLine("Print Compelete");
+            WechatPrinterConf.IsPrinting = false;
             HidePrintImg();
             SendPrintSuccess();
         }
