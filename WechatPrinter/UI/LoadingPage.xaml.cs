@@ -50,7 +50,9 @@ namespace WechatPrinter
             {
                 try
                 {
-                    ee.Result = HttpUtils.GetJson<InfoBean>(WechatPrinterConf.InitUrl, null);
+                    Dictionary<string, string> param = new Dictionary<string,string>();
+                    param.Add(WechatPrinterConf.ParamKeys.Id, WechatPrinterConf.Id);
+                    ee.Result = HttpUtils.GetJson<InfoBean>(WechatPrinterConf.InitUrl, param, true);
                 }
                 catch (Exception ex)
                 {
@@ -101,7 +103,7 @@ namespace WechatPrinter
                     page.image_ad3.Opacity = 1d;
 
 
-                    server.ShowCaptcha(WechatPrinterConf.Captcha);
+                    server.ShowCaptcha();
                     page.label_captcha.Opacity = 1d;
 
                     Stage(0);
@@ -149,10 +151,10 @@ namespace WechatPrinter
 
     public class InfoBean
     {
-        public StringCollection AdVidUrls { get; set; }
-        public StringCollection AdImgUrls { get; set; }
-        public string QRCodeUrl { get; set; }
-        public int Captcha { get; set; }
+        public StringCollection videoUrl { get; set; }
+        public StringCollection picUrl { get; set; }
+        public string qrcodeUrl { get; set; }
+        public int verifyCode { get; set; }
     }
 
     public interface ILoadStatus

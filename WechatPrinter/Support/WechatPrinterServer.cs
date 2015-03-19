@@ -22,7 +22,7 @@ using System.Windows.Threading;
 
 namespace WechatPrinter
 {
-    public class WechatPrinterServer : IPrinterStatus,IDisposable
+    public class WechatPrinterServer : IPrinterStatus, IDisposable
     {
 
         private void BackgroundRun(Action action)
@@ -109,14 +109,8 @@ namespace WechatPrinter
                     Dictionary<string, string> param = new Dictionary<string, string>();
                     param.Add(WechatPrinterConf.ParamKeys.Status, ((int)WechatPrinterConf.PrintImgStatus.Success).ToString());
                     PrintStatusBean bean = HttpUtils.GetJson<PrintStatusBean>(WechatPrinterConf.PrintImgCallBackUrl, param);//TODO 打印成功
-                    if (bean.Status == (int)WechatPrinterConf.PrintImgStatus.Success)
-                    {
-                        ShowCaptcha(bean.Captcha);
-                    }
-                    else
-                    {
-                        ShowCaptcha(-1);
-                    }
+                    WechatPrinterConf.Captcha = bean.Captcha;
+                    ShowCaptcha();//TODO 测试下
                 }
                 catch (Exception ex)
                 {
@@ -130,7 +124,21 @@ namespace WechatPrinter
         #region 打印失败
         private void SendPrintFailed()
         {
+            BackgroundRun(delegate
+            {
+                try
+                {
+                    Dictionary<string, string> param = new Dictionary<string, string>();
+                    param.Add(WechatPrinterConf.ParamKeys.Status, ((int)WechatPrinterConf.PrintImgStatus.Fail).ToString());
+                    PrintStatusBean bean = HttpUtils.GetJson<PrintStatusBean>(WechatPrinterConf.PrintImgCallBackUrl, param);//TODO 打印失败
 
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine("[SendPrintFail Error]");
+                    Console.WriteLine(ex.StackTrace);
+                }
+            });
         }
         #endregion
         #endregion
@@ -147,14 +155,16 @@ namespace WechatPrinter
         #region 更新二维码
         public void ShowQRImg(string url)
         {
-            BackgroundRun(delegate {
+            BackgroundRun(delegate
+            {
                 try
                 {
                     string filepath = HttpUtils.GetFile(FileUtils.ResPathsEnum.QR, url, null);
                     if (filepath != null && !filepath.Equals(String.Empty))
                     {
                         BitmapImage bi = FileUtils.LoadImage(filepath, QR_IMG_DECODE_WIDTH);
-                        page.Dispatcher.BeginInvoke(new Action(delegate {
+                        page.Dispatcher.BeginInvoke(new Action(delegate
+                        {
                             page.image_QR.Source = bi;
                         }));
                     }
@@ -230,7 +240,7 @@ namespace WechatPrinter
         {
             TimerState s = (TimerState)state;
             BitmapImage[] bis = new BitmapImage[3];
-            for(int i =0;i<3;i++)
+            for (int i = 0; i < 3; i++)
             {
                 if (s.Counter == s.Filepaths.Count)
                     s.Counter = 0;
@@ -338,13 +348,13 @@ namespace WechatPrinter
         #endregion
 
         #region 获得并更新验证码
-        public void ShowCaptcha(int captcha)
+        public void ShowCaptcha()
         {
             page.Dispatcher.BeginInvoke(new Action(delegate
             {
-                if (captcha != -1)
+                if (WechatPrinterConf.Captcha != -1)
                 {
-                    page.textBlock_captcha.Text = captcha.ToString();
+                    page.textBlock_captcha.Text = WechatPrinterConf.Captcha.ToString();
                 }
                 else
                 {
@@ -468,7 +478,7 @@ namespace WechatPrinter
 
         public void Dispose()
         {
-            if(printImgTimer!=null)
+            if (printImgTimer != null)
                 printImgTimer.Dispose();
             adImgTimerFlag = false;
             errorTimerFlag = false;
