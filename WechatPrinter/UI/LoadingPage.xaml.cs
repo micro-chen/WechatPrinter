@@ -91,22 +91,34 @@ namespace WechatPrinter
                     WechatPrinterServer server = new WechatPrinterServer(page);
                     page.Server = server;
 
-                    server.ShowQRImg(WechatPrinterConf.QRCodeUrl);
+                    try
+                    {
+                        server.ShowCoName();
 
-                    server.ShowAdVid(WechatPrinterConf.AdVidUrls, this);
-                    page.mediaElement_ad.Opacity = 1d;
-                    page.mediaElement_ad.Play();
+                        server.ShowQRImg(WechatPrinterConf.QRCodeUrl);
 
-                    server.ShowAdImg(WechatPrinterConf.AdImgUrls, this);
-                    page.image_ad1.Opacity = 1d;
-                    page.image_ad2.Opacity = 1d;
-                    page.image_ad3.Opacity = 1d;
+                        server.ShowAdVid(WechatPrinterConf.AdVidUrls, this);
+                        page.mediaElement_ad.Opacity = 1d;
+                        page.mediaElement_ad.Play();
+
+                        server.ShowAdImg(WechatPrinterConf.AdImgUrls, this);
+                        page.image_ad1.Opacity = 1d;
+                        page.image_ad2.Opacity = 1d;
+                        page.image_ad3.Opacity = 1d;
 
 
-                    server.ShowCaptcha();
-                    page.label_captcha.Opacity = 1d;
+                        server.ShowCaptcha();
+                        page.label_captcha.Opacity = 1d;
 
-                    Stage(0);
+                        Stage(0);
+                    }
+                    catch
+                    {
+                        Window window = (MainWindow)Window.GetWindow(this);
+                        MessageBox.Show("微信打印服务器正在维护", "提示", MessageBoxButton.OK, MessageBoxImage.Information);
+                        window.Close();
+                    }
+                    
                 }
             };
             bw.RunWorkerAsync();
@@ -155,6 +167,7 @@ namespace WechatPrinter
         public StringCollection picUrl { get; set; }
         public string qrcodeUrl { get; set; }
         public int verifyCode { get; set; }
+        public string name { get; set; }
     }
 
     public interface ILoadStatus

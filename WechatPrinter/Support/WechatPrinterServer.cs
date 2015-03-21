@@ -33,6 +33,7 @@ namespace WechatPrinter
         {
             this.page = page;
             PrinterUtils.Start(this, page);
+            CheckPrintImg();
         }
 
 
@@ -41,7 +42,7 @@ namespace WechatPrinter
         private Timer printImgTimer;
         public void CheckPrintImg()
         {
-            printImgTimer = new Timer(GetPrintImg, WechatPrinterConf.PrintImgUrl, 0, WechatPrinterConf.PrintImgInterval);
+            printImgTimer = new Timer(GetPrintImg, null, 0, WechatPrinterConf.PrintImgInterval);
         }
         public void StopPrintImg()
         {
@@ -59,7 +60,7 @@ namespace WechatPrinter
                     Console.WriteLine("Start to get print images");
                     try
                     {
-                        PrintImgBean bean = HttpUtils.GetJson<PrintImgBean>((string)o, null);
+                        PrintImgBean bean = HttpUtils.GetJson<PrintImgBean>(WechatPrinterConf.PrintImgUrl, null, true);
                         if (bean.ImgUrl != null && !bean.ImgUrl.Equals(String.Empty))
                         {
                             WechatPrinterConf.IsPrinting = true;
@@ -70,13 +71,13 @@ namespace WechatPrinter
                                 if (!filepath.Equals(String.Empty))
                                 {
                                     HideDownloading();
-                                    PrintImg(filepath);
+                                    PrintImg(filepath, bean.ImgId);
                                     ShowPrintImg(filepath);
                                 }
                             }
                             catch (Exception ex)
                             {
-                                Console.WriteLine("[GetToPrintImg:for Error]");
+                                Console.WriteLine("[GetPrintImg Error]");
                                 Console.WriteLine(ex.Message);
 
                                 //TODO 下载出错提示
@@ -90,7 +91,7 @@ namespace WechatPrinter
                     }
                     catch (Exception ex)
                     {
-                        Console.WriteLine("[GetToPrintImg Error]");
+                        Console.WriteLine("[GetPrintImg Error]");
                         Console.WriteLine(ex.StackTrace);
                         ShowError(ErrorUtils.HandleError(ErrorUtils.Error.NetworkUnavailable));
                     }
@@ -100,7 +101,7 @@ namespace WechatPrinter
         #endregion
         #region 返回打印状态
         #region 打印成功
-        private void SendPrintSuccess()
+        private void SendPrintSuccess(int imgId)
         {
             BackgroundRun(delegate
             {
@@ -108,7 +109,9 @@ namespace WechatPrinter
                 {
                     Dictionary<string, string> param = new Dictionary<string, string>();
                     param.Add(WechatPrinterConf.ParamKeys.Status, ((int)WechatPrinterConf.PrintImgStatus.Success).ToString());
-                    PrintStatusBean bean = HttpUtils.GetJson<PrintStatusBean>(WechatPrinterConf.PrintImgCallBackUrl, param);//TODO 打印成功
+                    param.Add(WechatPrinterConf.ParamKeys.Id, imgId.ToString());
+                    PrintStatusBean bean = HttpUtils.GetJson<PrintStatusBean>(WechatPrinterConf.PrintImgCallBackUrl, param, true);//TODO 打印成功
+                    Console.WriteLine("PRINT SUCCESS RETURN CAPTCHA: " + bean.Captcha);
                     WechatPrinterConf.Captcha = bean.Captcha;
                     ShowCaptcha();//TODO 测试下
                 }
@@ -130,7 +133,7 @@ namespace WechatPrinter
                 {
                     Dictionary<string, string> param = new Dictionary<string, string>();
                     param.Add(WechatPrinterConf.ParamKeys.Status, ((int)WechatPrinterConf.PrintImgStatus.Fail).ToString());
-                    PrintStatusBean bean = HttpUtils.GetJson<PrintStatusBean>(WechatPrinterConf.PrintImgCallBackUrl, param);//TODO 打印失败
+                    //PrintStatusBean bean = HttpUtils.GetJson<PrintStatusBean>(WechatPrinterConf.PrintImgCallBackUrl, param);//TODO 打印失败
 
                 }
                 catch (Exception ex)
@@ -191,13 +194,13 @@ namespace WechatPrinter
         }
         private void HidePrintImg()
         {
-            page.Dispatcher.BeginInvoke(new Action(delegate
-            {
-                page.image_print.BeginAnimation(System.Windows.Controls.Image.OpacityProperty, fadeOutAnim);
-                page.mediaElement_ad.BeginAnimation(System.Windows.Controls.MediaElement.OpacityProperty, fadeInAnim);
-            }));
 
-        }
+                page.Dispatcher.BeginInvoke(new Action(delegate
+                {
+                    page.image_print.BeginAnimation(System.Windows.Controls.Image.OpacityProperty, fadeOutAnim);
+                    page.mediaElement_ad.BeginAnimation(System.Windows.Controls.MediaElement.OpacityProperty, fadeInAnim);
+                }));
+                    }
 
         #endregion
 
@@ -347,7 +350,7 @@ namespace WechatPrinter
         }
         #endregion
 
-        #region 获得并更新验证码
+        #region 更新验证码
         public void ShowCaptcha()
         {
             page.Dispatcher.BeginInvoke(new Action(delegate
@@ -359,6 +362,24 @@ namespace WechatPrinter
                 else
                 {
                     page.textBlock_captcha.Text = "服务器出错";
+                }
+
+            }));
+        }
+        #endregion
+
+        #region 更新公司名称
+        public void ShowCoName()
+        {
+            page.Dispatcher.BeginInvoke(new Action(delegate
+            {
+                //if (!WechatPrinterConf.CoName.Equals(String.Empty))
+                {
+                    page.label_shop.Content = WechatPrinterConf.CoName;
+                }
+                //else
+                {
+                    //page.label_shop.Content = "";
                 }
 
             }));
@@ -432,7 +453,7 @@ namespace WechatPrinter
         #endregion
 
         #region 打印
-        public void PrinterError(PrintQueueStatus error)
+        public void PrinterError(PrintQueueStatus error, int imgId)
         {
             //TODO 打印机错误
         }
@@ -440,16 +461,20 @@ namespace WechatPrinter
         {
             //TODO 打印机恢复
         }
-        public void PrinterCompeleted()
+        public void PrinterCompeleted(int imgId)
         {
             Console.WriteLine("Print Compelete");
-            WechatPrinterConf.IsPrinting = false;
-            HidePrintImg();
-            SendPrintSuccess();
+            BackgroundRun(delegate{
+                Thread.Sleep(WechatPrinterConf.PrintWaitTime);
+                Console.WriteLine("Print Compelete - Hide");
+                HidePrintImg();
+                SendPrintSuccess(imgId);
+                WechatPrinterConf.IsPrinting = false;
+            });
         }
-        private void PrintImg(string filepath)
+        private void PrintImg(string filepath, int imgId)
         {
-            PrinterUtils.Print(filepath);
+            PrinterUtils.Print(filepath, imgId);
         }
         #endregion
 
@@ -457,12 +482,19 @@ namespace WechatPrinter
         #region JsonBean
         public class PrintImgBean
         {
-            public string ImgUrl { get; set; }
+            public int id { private get; set; }
+            public string url { private get; set; }
+
+            public int ImgId { get { return id; } }
+            public string ImgUrl { get { return url; } }
+            public string Uid { get; set; }
+            public int State { get; set; }
+            
         }
         public class PrintStatusBean
         {
-            public int Status { get; set; }
-            public int Captcha { get; set; }
+            public int verifyCode { private get; set; }
+            public int Captcha { get { return verifyCode; } }
         }
         #endregion
         #region TimerState

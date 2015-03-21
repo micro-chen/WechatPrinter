@@ -26,9 +26,9 @@ namespace WechatPrinter
         {
             InitializeComponent();
             this.WindowState = WindowState.Maximized;
-            this.WindowStyle = WindowStyle.None;
+            //this.WindowStyle = WindowStyle.None;
             this.ResizeMode = System.Windows.ResizeMode.NoResize;
-            this.Topmost = true;       
+            //this.Topmost = true;
 
         }
         public void LoadCompleted(MainPage page)

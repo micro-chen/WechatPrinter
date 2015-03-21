@@ -158,7 +158,9 @@
       <Install>false</Install>
     </BootstrapperPackage>
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <Resource Include="Resource\Image\smkjblack.png" />
+  </ItemGroup>
   <ItemGroup>
     <Resource Include="Resource\Image\background.jpg">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>

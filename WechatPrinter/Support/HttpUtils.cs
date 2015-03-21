@@ -31,7 +31,7 @@ namespace WechatPrinter.Support
                     sb.Append("?");
                     sb.Append(WechatPrinterConf.ParamKeys.Id).Append("=").Append(WechatPrinterConf.Id).Append("&");
                     sb.Append(WechatPrinterConf.ParamKeys.Token).Append("=").Append(WechatPrinterConf.Token);
-                    sb.Append(EncodeParamFromMap(param,false));
+                    sb.Append(EncodeParamFromMap(param, false));
 
                     Console.WriteLine("DoGet Url: " + sb.ToString());
 
@@ -165,16 +165,26 @@ namespace WechatPrinter.Support
 
         public static string GetFile(FileUtils.ResPathsEnum path, string url, Dictionary<string, string> param, bool isPost = false)
         {
-            string filename = url.Substring(url.LastIndexOf("/") + 1);
+            string filename;
+            if (path == FileUtils.ResPathsEnum.PrintImg)
+            {
+                filename = url.Substring(0, url.LastIndexOf("/"));
+                filename = filename.Substring(filename.LastIndexOf("/") + 1);
+            }
+            else
+            {
+                filename = url.Substring(url.LastIndexOf("/") + 1);
+            }
             try
             {
                 Console.WriteLine("GetFile: [" + path + "] " + filename);
-                if(!isPost){
-
-                using (Stream stream = DoGet(url, param).GetResponseStream())
+                if (!isPost)
                 {
-                    return FileUtils.SaveFile(stream, path, filename);
-                }
+
+                    using (Stream stream = DoGet(url, param).GetResponseStream())
+                    {
+                        return FileUtils.SaveFile(stream, path, filename);
+                    }
                 }
                 else
                 {

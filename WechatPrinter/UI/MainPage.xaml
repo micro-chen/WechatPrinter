@@ -4,7 +4,7 @@
       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
       xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
       mc:Ignorable="d" 
-      d:DesignHeight="768" d:DesignWidth="1366"
+      d:DesignHeight="1080" d:DesignWidth="1920"
 	Title="微信打印" KeyDown="page_main_KeyDown" Loaded="page_main_Loaded" FontFamily="/WechatPrinter;component/Resource/Font/#Source Han Sans CN Regular">
 
 
@@ -41,18 +41,19 @@
 
     <Grid HorizontalAlignment="Center">
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="1420"/>
+            <ColumnDefinition Width="70"/>
             <ColumnDefinition Width="350" />
         </Grid.ColumnDefinitions>
 
         <Grid Grid.Column="0">
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="330" />
-                <ColumnDefinition Width="330" />
-                <ColumnDefinition Width="330" />
+                <ColumnDefinition Width="473" />
+                <ColumnDefinition Width="473" />
+                <ColumnDefinition Width="473" />
             </Grid.ColumnDefinitions>
             <Grid.RowDefinitions>
-                <RowDefinition Height="530" />
+                <RowDefinition Height="800" />
                 <RowDefinition Height="*" />
             </Grid.RowDefinitions>
 
@@ -74,15 +75,15 @@
 
 
             <Border Style="{StaticResource CustomBackground}" SnapsToDevicePixels="True" Grid.Row="1" Grid.Column="0" Margin="10,10,5,20">
-                <Image Margin="10" Source="D:\VS\projects\WechatPrinter\WechatPrinter\bin\Debug\res\ad\img\6cf8a22bjw1eodufymcyqj218g0tndqr.jpg" Stretch="Fill" x:Name="image_ad1" Opacity="0.2"/>
+                <Image Margin="10" Stretch="Fill" x:Name="image_ad1" Opacity="0.2"/>
             </Border>
 
             <Border Style="{StaticResource CustomBackground}" SnapsToDevicePixels="True" Grid.Row="1" Grid.Column="1" Margin="5,10,5,20">
-                <Image Margin="10" Source="D:\VS\projects\WechatPrinter\WechatPrinter\bin\Debug\res\ad\img\6cf8a22bjw1eodufymcyqj218g0tndqr.jpg" Stretch="Fill" x:Name="image_ad2" Opacity="0.2" />
+                <Image Margin="10" Stretch="Fill" x:Name="image_ad2" Opacity="0.2" />
             </Border>
 
             <Border Style="{StaticResource CustomBackground}" SnapsToDevicePixels="True" Grid.Row="1" Grid.Column="2" Margin="5,10,20,20">
-                <Image Margin="10" Source="D:\VS\projects\WechatPrinter\WechatPrinter\bin\Debug\res\ad\img\6cf8a22bjw1eodufymcyqj218g0tndqr.jpg" Stretch="Fill" x:Name="image_ad3" Opacity="0.2" />
+                <Image Margin="10"  Stretch="Fill" x:Name="image_ad3" Opacity="0.2" />
             </Border>
         </Grid>
 
@@ -92,15 +93,15 @@
                     <ColumnDefinition Width="*" />
                 </Grid.ColumnDefinitions>
                 <Grid.RowDefinitions>
-                    <RowDefinition Height="300" />
-                    <RowDefinition Height="70"/>
+                    <RowDefinition Height="400" />
+                    <RowDefinition Height="100"/>
                     <RowDefinition Height="100" />
-                    <RowDefinition Height="100" />
+                    <RowDefinition Height="150" />
                     <RowDefinition Height="*" />
                     <RowDefinition Height="*"/>
                 </Grid.RowDefinitions>
 
-                <Border SnapsToDevicePixels="True" Grid.Row="0" Grid.Column="0" Width="300" Height="300" VerticalAlignment="Top" Margin="20,0">
+                <Border SnapsToDevicePixels="True" Grid.Row="0" Grid.Column="0" Width="300" Height="300" VerticalAlignment="Top" Margin="20,50,20,0">
                     <Image x:Name="image_QR" />
                     <Border.Background>
                         <RadialGradientBrush 
@@ -116,9 +117,9 @@
                 </Border>
 
                 <Border SnapsToDevicePixels="True" Grid.Row="1" Grid.Column="0" Style="{StaticResource CustomShadow}">
-                    <Label x:Name="label_shop" Content="唔知乜鬼餐饮公司" Foreground="#FFE1F5FE" FontSize="40" HorizontalAlignment="Center"/>
+                    <Label x:Name="label_shop" Content="公司" Foreground="#FFE1F5FE" FontSize="40" HorizontalAlignment="Center"/>
                 </Border>
-                
+
                 <Border SnapsToDevicePixels="True" Grid.Row="2" Grid.Column="0">
                     <StackPanel>
                         <Label Content="扫码关注" Foreground="#68E1F5FE" FontSize="30" HorizontalAlignment="Center"/>
@@ -129,8 +130,8 @@
                     </Border.Effect>
                 </Border>
 
-                <Border SnapsToDevicePixels="True" Grid.Row="3" Grid.Column="0" Margin="50,10,50,10">
-                    <Label x:Name="label_captcha" Foreground="#FFEEFF41" FontSize="80" HorizontalAlignment="Center" FontFamily="/WechatPrinter;component/Resource/Font/#LCD">
+                <Border SnapsToDevicePixels="True" Grid.Row="3" Grid.Column="0" Margin="20,10,20,10">
+                    <Label x:Name="label_captcha" Foreground="#FFEEFF41" FontSize="120" HorizontalAlignment="Center" FontFamily="/WechatPrinter;component/Resource/Font/#LCD">
                         <TextBlock x:Name="textBlock_captcha" FontFamily="/WechatPrinter;component/Resource/Font/#Let's go Digital">
                         3759
                         </TextBlock>
@@ -147,9 +148,9 @@
                 </Border>
 
 
-                <Label x:Name="label_error" Content="Error" Opacity="0" Foreground="#FFFF5252" FontSize="36" Grid.Row="4" Grid.Column="0" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="123,0"/>
+                <Label x:Name="label_error" Content="Error" Opacity="0" Foreground="#FFFF5252" FontSize="36" Grid.Row="4" Grid.Column="0" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="10,0,10,0" Width="335" Height="100" />
                 <!--<Label Content="V1.0 Copyright © 深米科技" Foreground="#FFE1F5FE" FontSize="22" HorizontalAlignment="Center" Grid.Row="4"  Grid.Column="0" VerticalAlignment="Bottom"/>-->
-                <Image SnapsToDevicePixels="True" HorizontalAlignment="Center" Grid.Row="5"  Grid.Column="0" VerticalAlignment="Bottom" Source="pack://application:,,,/Resource/Image/smkj.png" Stretch="Uniform" Margin="123,0"/>
+                <Image SnapsToDevicePixels="True" HorizontalAlignment="Center" Grid.Row="5"  Grid.Column="0" VerticalAlignment="Bottom" Source="pack://application:,,,/Resource/Image/smkj.png" Stretch="Uniform" Margin="50,0,50,0" />
             </Grid>
         </Border>
     </Grid>

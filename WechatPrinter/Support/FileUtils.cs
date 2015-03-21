@@ -18,7 +18,7 @@ namespace WechatPrinter.Support
         private static string RootPath = AppDomain.CurrentDomain.BaseDirectory;
         private static string ResPath = RootPath + "res\\";
         public enum ResPathsEnum { PrintImg, AdImg, AdVid, QR };
-        public static string[] ResPaths = { ResPath + "print\\", ResPath + "ad\\img\\", ResPath + "ad\\vid\\" , ResPath+"qr\\"};
+        public static string[] ResPaths = { ResPath + "print\\", ResPath + "ad\\img\\", ResPath + "ad\\vid\\", ResPath + "qr\\" };
         public const int FOLDER_SIZE_LIMIT = 300;
 
         public static BitmapImage LoadImage(string filepath, int decodeWidth)
@@ -69,6 +69,7 @@ namespace WechatPrinter.Support
                         stream.CopyTo(fs);
                     }
                 }
+                Console.WriteLine("SaveFile: " + filepath + filename);
                 return filepath + filename;
             }
             catch (Exception)
