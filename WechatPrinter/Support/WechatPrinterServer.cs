@@ -22,7 +22,7 @@ using System.Windows.Threading;
 
 namespace WechatPrinter
 {
-    public class WechatPrinterServer : IPrinterStatus, IDisposable
+    public class WechatPrinterServer : IDisposable, IPrinterStatus
     {
 
         private void BackgroundRun(Action action)
@@ -32,19 +32,18 @@ namespace WechatPrinter
         public WechatPrinterServer(MainPage page)
         {
             this.page = page;
-            PrinterUtils.Start(this, page);
-            CheckPrintImg();
+            PrinterUtils.Start(this);
         }
-
 
         #region 发送请求
         #region 定时查询打印图片
         private Timer printImgTimer;
-        public void CheckPrintImg()
+
+        public void StartCheckPrintImg()
         {
             printImgTimer = new Timer(GetPrintImg, null, 0, WechatPrinterConf.PrintImgInterval);
         }
-        public void StopPrintImg()
+        public void StopCheckPrintImg()
         {
             printImgTimer.Dispose();
         }
@@ -65,6 +64,7 @@ namespace WechatPrinter
                         {
                             WechatPrinterConf.IsPrinting = true;
                             ShowDownloading();
+                            HideNetworkError();
                             try
                             {
                                 string filepath = HttpUtils.GetFile(FileUtils.ResPathsEnum.PrintImg, bean.ImgUrl, null);
@@ -83,7 +83,7 @@ namespace WechatPrinter
                                 //TODO 下载出错提示
                                 WechatPrinterConf.IsPrinting = false;
                                 HideDownloading();
-                                ShowError(ErrorUtils.HandleError(ErrorUtils.Error.NetworkFileNotFound));
+                                ShowNetworkError(ErrorUtils.HandleNetworkError(ErrorUtils.Error.NetworkFileNotFound));
                             }
 
 
@@ -93,7 +93,7 @@ namespace WechatPrinter
                     {
                         Console.WriteLine("[GetPrintImg Error]");
                         Console.WriteLine(ex.StackTrace);
-                        ShowError(ErrorUtils.HandleError(ErrorUtils.Error.NetworkUnavailable));
+                        ShowNetworkError(ErrorUtils.HandleNetworkError(ErrorUtils.Error.NetworkUnavailable));
                     }
                 });
             }
@@ -107,6 +107,7 @@ namespace WechatPrinter
             {
                 try
                 {
+                    HideNetworkError();
                     Dictionary<string, string> param = new Dictionary<string, string>();
                     param.Add(WechatPrinterConf.ParamKeys.Status, ((int)WechatPrinterConf.PrintImgStatus.Success).ToString());
                     param.Add(WechatPrinterConf.ParamKeys.Id, imgId.ToString());
@@ -117,6 +118,7 @@ namespace WechatPrinter
                 }
                 catch (Exception ex)
                 {
+                    ShowNetworkError(ErrorUtils.HandleNetworkError(ErrorUtils.Error.NetworkFileNotFound));
                     Console.WriteLine("[SendPrintSuccess Error]");
                     Console.WriteLine(ex.StackTrace);
                 }
@@ -195,12 +197,12 @@ namespace WechatPrinter
         private void HidePrintImg()
         {
 
-                page.Dispatcher.BeginInvoke(new Action(delegate
-                {
-                    page.image_print.BeginAnimation(System.Windows.Controls.Image.OpacityProperty, fadeOutAnim);
-                    page.mediaElement_ad.BeginAnimation(System.Windows.Controls.MediaElement.OpacityProperty, fadeInAnim);
-                }));
-                    }
+            page.Dispatcher.BeginInvoke(new Action(delegate
+            {
+                page.image_print.BeginAnimation(System.Windows.Controls.Image.OpacityProperty, fadeOutAnim);
+                page.mediaElement_ad.BeginAnimation(System.Windows.Controls.MediaElement.OpacityProperty, fadeInAnim);
+            }));
+        }
 
         #endregion
 
@@ -298,20 +300,20 @@ namespace WechatPrinter
             {
                 try
                 {
-                    bool flag = true;
-                    if (adVidFilepaths != null && adVidFilepaths.Count > 0 && adVidFilepaths.Count == urls.Count)
-                    {
-                        for (int i = 0; i < (adVidFilepaths.Count >= urls.Count ? urls.Count : adVidFilepaths.Count); i++)
-                        {
-                            if (adVidFilepaths[i].Equals(urls[i].Substring(urls[i].LastIndexOf("/") + 1)))
-                            {
-                                flag = false;
-                                break;
-                            }
-                        }
-                    }
-                    if (flag)
-                    {
+                    //bool flag = true;
+                    //if (adVidFilepaths != null && adVidFilepaths.Count > 0 && adVidFilepaths.Count == urls.Count)
+                    //{
+                    //    for (int i = 0; i < (adVidFilepaths.Count >= urls.Count ? urls.Count : adVidFilepaths.Count); i++)
+                    //    {
+                    //        if (adVidFilepaths[i].Equals(urls[i].Substring(urls[i].LastIndexOf("/") + 1)))
+                    //        {
+                    //            flag = false;
+                    //            break;
+                    //        }
+                    //    }
+                    //}
+                    //if (flag)
+                    //{
                         StringCollection filepaths = HttpUtils.GetFiles(FileUtils.ResPathsEnum.AdVid, urls, null);
                         adVidCounter = 0;
                         if (filepaths.Count > 0)
@@ -324,7 +326,7 @@ namespace WechatPrinter
                             page.mediaElement_ad.MediaEnded += AdVidEnded;
                             adVidInit = true;
                         }
-                    }
+                    //}
                     if (stage != null)
                         stage.Stage(1 << 1);
                 }
@@ -385,48 +387,91 @@ namespace WechatPrinter
             }));
         }
         #endregion
-
+        #endregion
 
 
         #region 更新错误
         private const int ERROR_TIMER_INTERVAL = 2 * 1000;
-        private bool errorTimerFlag;
-        public void ShowError(string errorString)
+
+        #region 网络错误
+        private bool networkErrorTimerFlag;
+        public void ShowNetworkError(string errorString)
         {
-            errorTimerFlag = true;
+            networkErrorTimerFlag = true;
             TimerState errorTimerState = new TimerState();
             errorTimerState.Filepaths = new StringCollection() { errorString };
-            Timer errorTimer = new Timer(ErrorTimerCallBack, errorTimerState, 0, ERROR_TIMER_INTERVAL);
+            Timer errorTimer = new Timer(NetworkErrorTimerCallBack, errorTimerState, 0, ERROR_TIMER_INTERVAL);
             errorTimerState.MainTimer = errorTimer;
         }
-        private void ErrorTimerCallBack(Object state)
+        private void NetworkErrorTimerCallBack(Object state)
         {
             TimerState s = (TimerState)state;
             page.Dispatcher.BeginInvoke(new Action(delegate
                 {
-                    page.label_error.Content = s.Filepaths[0];
-                    if (errorTimerFlag)
+                    page.label_network_error.Content = s.Filepaths[0];
+                    if (networkErrorTimerFlag)
                     {
                         if (s.Switcher)
                         {
-                            page.label_error.Opacity = 1d;
+                            page.label_network_error.Opacity = 1d;
                         }
                         else
                         {
-                            page.label_error.Opacity = 0d;
+                            page.label_network_error.Opacity = 0d;
                         }
                         s.Switcher = !s.Switcher;
                     }
                     else
                     {
                         s.MainTimer.Dispose();
-                        page.label_error.Opacity = 0d;
+                        page.label_network_error.Opacity = 0d;
                     }
                 }));
         }
-        public void HideError()
+        public void HideNetworkError()
         {
-            errorTimerFlag = false;
+            networkErrorTimerFlag = false;
+        }
+        #endregion
+
+        #region 打印机错误
+        private bool printerErrorTimerFlag;
+        public void ShowPrinterError(PrintQueueStatus status)
+        {
+            printerErrorTimerFlag = true;
+            TimerState errorTimerState = new TimerState();
+            errorTimerState.Filepaths = new StringCollection() { ErrorUtils.HandlePrinterError(status) };
+            Timer errorTimer = new Timer(PrinterErrorTimerCallBack, errorTimerState, 0, ERROR_TIMER_INTERVAL);
+            errorTimerState.MainTimer = errorTimer;
+        }
+        private void PrinterErrorTimerCallBack(Object state)
+        {
+            TimerState s = (TimerState)state;
+            page.Dispatcher.BeginInvoke(new Action(delegate
+            {
+                page.label_printer_error.Content = s.Filepaths[0];
+                if (printerErrorTimerFlag)
+                {
+                    if (s.Switcher)
+                    {
+                        page.label_printer_error.Opacity = 1d;
+                    }
+                    else
+                    {
+                        page.label_printer_error.Opacity = 0d;
+                    }
+                    s.Switcher = !s.Switcher;
+                }
+                else
+                {
+                    s.MainTimer.Dispose();
+                    page.label_printer_error.Opacity = 0d;
+                }
+            }));
+        }
+        public void HidePrinterError()
+        {
+            printerErrorTimerFlag = false;
         }
         #endregion
 
@@ -453,18 +498,19 @@ namespace WechatPrinter
         #endregion
 
         #region 打印
-        public void PrinterError(PrintQueueStatus error, int imgId)
+        public void PrinterError(PrintQueueStatus status, int imgId)
         {
-            //TODO 打印机错误
+            ShowPrinterError(status);
         }
         public void PrinterAvailable()
         {
-            //TODO 打印机恢复
+            HidePrinterError();
         }
         public void PrinterCompeleted(int imgId)
         {
             Console.WriteLine("Print Compelete");
-            BackgroundRun(delegate{
+            BackgroundRun(delegate
+            {
                 Thread.Sleep(WechatPrinterConf.PrintWaitTime);
                 Console.WriteLine("Print Compelete - Hide");
                 HidePrintImg();
@@ -489,7 +535,7 @@ namespace WechatPrinter
             public string ImgUrl { get { return url; } }
             public string Uid { get; set; }
             public int State { get; set; }
-            
+
         }
         public class PrintStatusBean
         {
@@ -513,7 +559,7 @@ namespace WechatPrinter
             if (printImgTimer != null)
                 printImgTimer.Dispose();
             adImgTimerFlag = false;
-            errorTimerFlag = false;
+            networkErrorTimerFlag = false;
         }
     }
 }

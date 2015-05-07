@@ -26,7 +26,7 @@ namespace WechatPrinter
         {
             InitializeComponent();
             this.WindowState = WindowState.Maximized;
-            //this.WindowStyle = WindowStyle.None;
+            this.WindowStyle = WindowStyle.None;
             this.ResizeMode = System.Windows.ResizeMode.NoResize;
             //this.Topmost = true;
 
@@ -36,6 +36,7 @@ namespace WechatPrinter
             this.Content = page;
             page.Opacity = 0d;
             page.BeginAnimation(Page.OpacityProperty, new DoubleAnimation(1d, TimeSpan.FromMilliseconds(1000)));
+            page.Server.StartCheckPrintImg();
         }
 
         private void MainWindow1_Loaded(object sender, RoutedEventArgs e)

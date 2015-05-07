@@ -41,87 +41,92 @@ namespace WechatPrinter
         {
             Console.WriteLine("Page Init");
 
-            InfoBean info = null;
-            //int retry = 0;
-            label_loading.Content = "连接微信打印服务器...";
-
-            BackgroundWorker bw = new BackgroundWorker();
-            bw.DoWork += (o, ee) =>
+            if (!PrinterUtils.Check())
             {
-                try
-                {
-                    Dictionary<string, string> param = new Dictionary<string,string>();
-                    param.Add(WechatPrinterConf.ParamKeys.Id, WechatPrinterConf.Id);
-                    ee.Result = HttpUtils.GetJson<InfoBean>(WechatPrinterConf.InitUrl, param, true);
-                }
-                catch (Exception ex)
-                {
-                    //retry++;
-                    //Console.WriteLine("[LoadingPage:Get InfoBean Error {0}]", retry);
-                    Console.WriteLine("LoadingPage:Get InfoBean Error");
-                    Console.WriteLine(ex.Message);
-                    ee.Result = null;
-                }
-            };
-            bw.RunWorkerCompleted += (o, ee) =>
+                MessageBox.Show("连接打印机错误", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
+                Window.GetWindow(this).Close();
+            }
+            else
             {
-                if (ee.Result == null)
+
+                InfoBean info = null;
+                //int retry = 0;
+                label_loading.Content = "连接微信打印服务器...";
+
+                BackgroundWorker bw = new BackgroundWorker();
+                bw.DoWork += (o, ee) =>
                 {
-                    //StringBuilder sb = new StringBuilder("重试连接微信打印服务器...[");
-                    //sb.Append(retry).Append("/3]");
-                    //label_loading.Content = sb.ToString();
-                    //if (retry < 3)
-                    //{
-                    //    bw.RunWorkerAsync();
-                    //}
-                    //else
-                    //{
-                        Window window = (MainWindow)Window.GetWindow(this);
-                        MessageBox.Show("连接微信打印服务器错误", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
-                        window.Close();
-                    //}
-                }
-                else
-                {
-                    info = (InfoBean)ee.Result;
-
-                    WechatPrinterConf.Init(info);
-
-                    page = new MainPage();
-                    WechatPrinterServer server = new WechatPrinterServer(page);
-                    page.Server = server;
-
                     try
                     {
-                        server.ShowCoName();
-
-                        server.ShowQRImg(WechatPrinterConf.QRCodeUrl);
-
-                        server.ShowAdVid(WechatPrinterConf.AdVidUrls, this);
-                        page.mediaElement_ad.Opacity = 1d;
-                        page.mediaElement_ad.Play();
-
-                        server.ShowAdImg(WechatPrinterConf.AdImgUrls, this);
-                        page.image_ad1.Opacity = 1d;
-                        page.image_ad2.Opacity = 1d;
-                        page.image_ad3.Opacity = 1d;
-
-
-                        server.ShowCaptcha();
-                        page.label_captcha.Opacity = 1d;
-
-                        Stage(0);
+                        Dictionary<string, string> param = new Dictionary<string, string>();
+                        param.Add(WechatPrinterConf.ParamKeys.Id, WechatPrinterConf.Id);
+                        ee.Result = HttpUtils.GetJson<InfoBean>(WechatPrinterConf.InitUrl, param, true);
                     }
-                    catch
+                    catch (Exception ex)
                     {
-                        Window window = (MainWindow)Window.GetWindow(this);
-                        MessageBox.Show("微信打印服务器正在维护", "提示", MessageBoxButton.OK, MessageBoxImage.Information);
-                        window.Close();
+                        Console.WriteLine("LoadingPage:Get InfoBean Error");
+                        Console.WriteLine(ex.Message);
+                        ee.Result = null;
                     }
-                    
-                }
-            };
-            bw.RunWorkerAsync();
+                };
+                bw.RunWorkerCompleted += (o, ee) =>
+                {
+                    if (ee.Result == null)
+                    {
+                        MessageBox.Show("连接微信打印服务器错误", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
+                        Window.GetWindow(this).Close();
+                    }
+                    else
+                    {
+                        info = (InfoBean)ee.Result;
+
+                        if (info.qrcodeUrl == null || info.verifyCode == 0)
+                        {
+                            MessageBox.Show("微信打印服务器内部错误", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
+                            Window.GetWindow(this).Close();
+                        }
+                        else
+                        {
+
+                            WechatPrinterConf.Init(info);
+
+                            page = new MainPage();
+                            WechatPrinterServer server = new WechatPrinterServer(page);
+                            page.Server = server;
+
+                            try
+                            {
+                                server.ShowCoName();
+
+                                server.ShowQRImg(WechatPrinterConf.QRCodeUrl);
+
+                                server.ShowAdVid(WechatPrinterConf.AdVidUrls, this);
+                                page.mediaElement_ad.Opacity = 1d;
+                                page.mediaElement_ad.Play();
+
+                                server.ShowAdImg(WechatPrinterConf.AdImgUrls, this);
+                                page.image_ad1.Opacity = 1d;
+                                page.image_ad2.Opacity = 1d;
+                                page.image_ad3.Opacity = 1d;
+
+
+                                server.ShowCaptcha();
+                                page.label_captcha.Opacity = 1d;
+
+                                Stage(0);
+                            }
+                            catch
+                            {
+                                Window window = (MainWindow)Window.GetWindow(this);
+                                MessageBox.Show("微信打印服务器正在维护", "提示", MessageBoxButton.OK, MessageBoxImage.Information);
+                                window.Close();
+                            }
+
+                        }
+                    }
+                };
+                bw.RunWorkerAsync();
+            }
         }
 
         private const int LOADING_WAIT_TIME = 0 * 1000;
@@ -129,7 +134,7 @@ namespace WechatPrinter
         public void Stage(int stage)
         {
             sum += stage;
-            page.Dispatcher.BeginInvoke(new Action(delegate
+            Dispatcher.BeginInvoke(new Action(delegate
             {
                 switch (sum)
                 {
@@ -155,7 +160,6 @@ namespace WechatPrinter
                         break;
                 }
             }));
-
         }
     }
 

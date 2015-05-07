@@ -26,20 +26,16 @@ namespace WechatPrinter.Support
         private static PrintQueue printQueue;
         private static Queue<string> filepahtQueue = new Queue<string>();
         private static IPrinterStatus printerStatus;
-        private static MainPage mainPage;
         private static bool run;
         private static bool isPrinting = false;
         private static int imgId = EmptyImgId;
 
-
-        public static void Start(IPrinterStatus ps, MainPage page)
+        public static void Start(IPrinterStatus ps)
         {
-            ThreadPool.QueueUserWorkItem(delegate(Object state)
+            ThreadPool.QueueUserWorkItem(delegate(object o)
             {
-                run = true;
                 foreach (PrintQueue pq in new LocalPrintServer().GetPrintQueues())
                 {
-                    Console.WriteLine(pq.Name);
                     if (pq.Name.Equals(WechatPrinterConf.PrinterName))
                     {
                         printQueue = pq;
@@ -48,10 +44,26 @@ namespace WechatPrinter.Support
                         break;
                     }
                 }
-                printerStatus = (IPrinterStatus)state;
-                mainPage = page;
+                printerStatus = (IPrinterStatus)o;
+                run = true;
                 Work();
             }, ps);
+
+        }
+
+        public static bool Check()
+        {
+            bool status = false;
+            foreach (PrintQueue pq in new LocalPrintServer().GetPrintQueues())
+            {
+                Console.WriteLine(pq.Name);
+                if (pq.Name.Equals(WechatPrinterConf.PrinterName))
+                {
+                    status = true;
+                    break;
+                }
+            }
+            return status;
         }
 
         public static void Stop()
@@ -82,87 +94,102 @@ namespace WechatPrinter.Support
 
                         Console.WriteLine(printQueue.Name + " print\t" + filepath);
 
-                        //mainPage.Dispatcher.BeginInvoke(new Action(delegate {
-
                         using (MemoryStream ms = new MemoryStream())
                         {
-                            bool rotated270 = false;
-                            Bitmap bm = new Bitmap(filepath);
-                            bm.Save(ms, ImageFormat.Png);
-                            int oriWidth = bm.Width;
-                            int oriHeight = bm.Height;
-                            bm.Dispose();
-                            BitmapImage bi = new BitmapImage();
-                            bi.BeginInit();
-                            bi.StreamSource = ms;
-                            if (oriWidth > oriHeight)
+
+                            try
                             {
-                                bi.Rotation = Rotation.Rotate90;
+                                Bitmap bm = new Bitmap(filepath);
+                                bm.Save(ms, ImageFormat.Png);
+                                int oriWidth = bm.Width;
+                                int oriHeight = bm.Height;
+                                bm.Dispose();
+
+
+                                BitmapImage bi = new BitmapImage();
+                                bi.BeginInit();
+                                bi.StreamSource = ms;
+                                //旧版用于旋转
+                                //if (oriWidth > oriHeight)
+                                //{
+                                //    bi.Rotation = Rotation.Rotate90;
+                                //}
+
+                                bi.EndInit();
+                                bi.Freeze();
+
+                                TransformedBitmap tbi = new TransformedBitmap();
+                                tbi.BeginInit();
+                                //tbi.Source = bi;
+
+                                int x, y, width;
+                                if (bi.PixelWidth > bi.PixelHeight) // 横向图片
+                                {
+                                    x = (bi.PixelWidth - bi.PixelHeight) / 2;
+                                    y = 0;
+                                    width = bi.PixelHeight;
+                                }
+                                else // 纵向图片
+                                {
+                                    x = 0;
+                                    y = (bi.PixelHeight - bi.PixelWidth) / 2;
+                                    width = bi.PixelWidth;
+                                }
+
+                                tbi.Source = new CroppedBitmap(bi, new Int32Rect(x, y, width, width));
+                                double targetScale;
+                                //if (WechatPrinterConf.PrinterWidth / bi.PixelWidth * bi.PixelHeight > WechatPrinterConf.PrinterHeight)
+                                //{
+                                //    targetScale = WechatPrinterConf.PrinterHeight / bi.PixelHeight;
+                                //}
+                                //else
+                                //{
+                                //    targetScale = WechatPrinterConf.PrinterWidth / bi.PixelWidth;
+                                //}
+                                //tbi.Transform = new ScaleTransform(targetScale, targetScale);
+
+                                targetScale = WechatPrinterConf.PrinterWidth / width;
+                                tbi.Transform = new ScaleTransform(targetScale, targetScale);
+
+                                tbi.EndInit();
+                                tbi.Freeze();
+
+                                BitmapImage logo = new BitmapImage();
+                                logo.BeginInit();
+                                logo.UriSource = new Uri("pack://application:,,,/Resource/Image/smkjblack.png");
+                                logo.EndInit();
+                                logo.Freeze();
+
+                                BitmapImage qr = new BitmapImage();
+                                qr.BeginInit();
+                                qr.UriSource = new Uri("pack://application:,,,/Resource/Image/qrcode.png");
+                                qr.EndInit();
+                                qr.Freeze();
+
+                                var group = new DrawingGroup();
+                                //group.Children.Add(new ImageDrawing(tbi, new Rect(WechatPrinterConf.PrinterWidthPos + WechatPrinterConf.PrinterWidth / 2d - (tbi.PixelWidth / 2d), WechatPrinterConf.PrinterHeightPos, tbi.PixelWidth * (WechatPrinterConf.ScreenDpi / WechatPrinterConf.PrinterDpi), tbi.PixelHeight * (WechatPrinterConf.ScreenDpi / WechatPrinterConf.PrinterDpi))));
+                                group.Children.Add(new ImageDrawing(tbi, new Rect(WechatPrinterConf.PrinterWidthPos + ((WechatPrinterConf.PrinterWidth - tbi.PixelWidth) / 2d) * (WechatPrinterConf.ScreenDpi / WechatPrinterConf.PrinterDpi), WechatPrinterConf.PrinterHeightPos + ((WechatPrinterConf.PrinterHeight - tbi.PixelHeight) / 2d) * (WechatPrinterConf.ScreenDpi / WechatPrinterConf.PrinterDpi), tbi.PixelWidth * (WechatPrinterConf.ScreenDpi / WechatPrinterConf.PrinterDpi), tbi.PixelHeight * (WechatPrinterConf.ScreenDpi / WechatPrinterConf.PrinterDpi))));
+                                group.Children.Add(new ImageDrawing(logo, new Rect(WechatPrinterConf.PrinterLogoWidthPos, WechatPrinterConf.PrinterLogoHeightPos, WechatPrinterConf.PrinterLogoHeight * 5.65 * (WechatPrinterConf.ScreenDpi / WechatPrinterConf.PrinterDpi), WechatPrinterConf.PrinterLogoHeight * (WechatPrinterConf.ScreenDpi / WechatPrinterConf.PrinterDpi))));
+                                group.Children.Add(new ImageDrawing(qr, new Rect(WechatPrinterConf.PrinterQrWidthPos, WechatPrinterConf.PrinterQrHeightPos, WechatPrinterConf.PrinterQrHeight * (WechatPrinterConf.ScreenDpi / WechatPrinterConf.PrinterDpi), WechatPrinterConf.PrinterQrHeight * (WechatPrinterConf.ScreenDpi / WechatPrinterConf.PrinterDpi))));
+
+                                var vis = new DrawingVisual();
+
+
+                                using (DrawingContext dc = vis.RenderOpen())
+                                {
+                                    dc.DrawDrawing(group);
+                                }
+
+
+                                isPrinting = true;
+
+                                printDialog.PrintVisual(vis, "Wechat Printer Image");
                             }
-                            else
+                            catch (Exception ex)
                             {
-                                //bi.Rotation = Rotation.Rotate270;
-                                //rotated270 = true;
+                                Console.WriteLine(ex.StackTrace);    
                             }
-                            
-                            bi.EndInit();
-                            bi.Freeze();
-
-                            TransformedBitmap tbi = new TransformedBitmap();
-                            tbi.BeginInit();
-                            tbi.Source = bi;
-                            double targetScale;
-                            if (WechatPrinterConf.PrinterWidth / bi.PixelWidth * bi.PixelHeight > WechatPrinterConf.PrinterHeight)
-                            {
-                                targetScale = WechatPrinterConf.PrinterHeight / bi.PixelHeight;
-                            }
-                            else
-                            {
-                                targetScale = WechatPrinterConf.PrinterWidth / bi.PixelWidth;
-                            }
-
-                            tbi.Transform = new ScaleTransform(targetScale, targetScale);
-                            tbi.EndInit();
-                            tbi.Freeze();
-
-                            BitmapImage logo = new BitmapImage();
-                            logo.BeginInit();
-                            if(rotated270)
-                            {
-                                //logo.Rotation = Rotation.Rotate270;
-                            }
-                            logo.UriSource = new Uri("pack://application:,,,/Resource/Image/smkjblack.png");
-                            logo.EndInit();
-                            logo.Freeze();
-
-                            //Console.WriteLine("printable 1: {0}x{1}", printDialog.PrintableAreaWidth, printDialog.PrintableAreaHeight);
-                            //PrintTicket pt = printQueue.DefaultPrintTicket;
-                            //pt.PageMediaSize = new PageMediaSize(PRINT_WIDTH, PRINT_HEIGHT);
-                            //printDialog.PrintTicket = pt;
-                            //Console.WriteLine("printable 2: {0}x{1}", printDialog.PrintableAreaWidth, printDialog.PrintableAreaHeight);
-
-                            var group = new DrawingGroup();
-                            group.Children.Add(new ImageDrawing(tbi, new Rect(WechatPrinterConf.PrinterWidthPos, WechatPrinterConf.PrinterHeightPos, tbi.PixelWidth * (WechatPrinterConf.ScreenDpi / WechatPrinterConf.PrinterDpi), tbi.PixelHeight * (WechatPrinterConf.ScreenDpi / WechatPrinterConf.PrinterDpi))));
-                            group.Children.Add(new ImageDrawing(logo, new Rect(WechatPrinterConf.PrinterLogoWidthPos, WechatPrinterConf.PrinterLogoHeightPos, WechatPrinterConf.PrinterLogoHeight * 5.65 * (WechatPrinterConf.ScreenDpi / WechatPrinterConf.PrinterDpi), WechatPrinterConf.PrinterLogoHeight * (WechatPrinterConf.ScreenDpi / WechatPrinterConf.PrinterDpi))));
-
-                            var vis = new DrawingVisual();
-
-
-                            using (DrawingContext dc = vis.RenderOpen())
-                            {
-                                dc.DrawDrawing(group);
-                            }
-
-
-                            isPrinting = true;
-
-                            printDialog.PrintVisual(vis, "Wechat Printer Image");
                         }
-
-                        //}));
-
-
-
                     }
                 }
                 else if (printQueue.IsPrinting || printQueue.IsBusy || printQueue.IsProcessing)
@@ -172,21 +199,37 @@ namespace WechatPrinter.Support
                         isPrinting = true;
                     }
                     Console.WriteLine("Printing");
+                    if (printerStatus != null)
+                        printerStatus.PrinterAvailable();
                 }
                 else if (printQueue.IsWaiting || printQueue.QueueStatus == PrintQueueStatus.None)
                 {
                     if (isPrinting)
                     {
-                        printerStatus.PrinterCompeleted(imgId);
+                        if (printerStatus != null)
+                            printerStatus.PrinterCompeleted(imgId);
                         PrinterUtils.imgId = EmptyImgId;
-                        //TODO
                         isPrinting = false;
                     }
-
+                    if (printerStatus != null)
+                        printerStatus.PrinterAvailable();
+                }
+                else if (printQueue.IsTonerLow)
+                {
+                    if (isPrinting)
+                    {
+                        if (printerStatus != null)
+                            printerStatus.PrinterCompeleted(imgId);
+                        PrinterUtils.imgId = EmptyImgId;
+                        isPrinting = false;
+                    }
+                    if (printerStatus != null)
+                        printerStatus.PrinterError(PrintQueueStatus.TonerLow, imgId);
                 }
                 else
                 {
-                    printerStatus.PrinterError(printQueue.QueueStatus, imgId);
+                    if (printerStatus != null)
+                        printerStatus.PrinterError(printQueue.QueueStatus, imgId);
                     PrinterUtils.imgId = EmptyImgId;
 
                     //TODO 打印机错误

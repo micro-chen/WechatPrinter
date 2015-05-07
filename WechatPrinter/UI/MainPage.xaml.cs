@@ -46,13 +46,13 @@ namespace WechatPrinter
         {
             if (e.Key == Key.Escape)
                 window.Close();
-            else if (e.Key == Key.J)
-                server.HideAdImg();
-            else if (e.Key == Key.Enter)
-            {
-                Console.WriteLine("Enter");
-                server.GetPrintImg(WechatPrinterConf.PrintImgUrl);
-            }
+            //else if (e.Key == Key.J)
+            //    server.HideAdImg();
+            //else if (e.Key == Key.Enter)
+            //{
+            //    Console.WriteLine("Enter");
+            //    server.GetPrintImg(WechatPrinterConf.PrintImgUrl);
+            //}
         }
 
         private void page_main_Loaded(object sender, RoutedEventArgs e)

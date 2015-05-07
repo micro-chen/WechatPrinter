@@ -15,11 +15,14 @@ namespace WechatPrinter.Support
     public class FileUtils
     {
 
-        private static string RootPath = AppDomain.CurrentDomain.BaseDirectory;
-        private static string ResPath = RootPath + "res\\";
         public enum ResPathsEnum { PrintImg, AdImg, AdVid, QR };
-        public static string[] ResPaths = { ResPath + "print\\", ResPath + "ad\\img\\", ResPath + "ad\\vid\\", ResPath + "qr\\" };
-        public const int FOLDER_SIZE_LIMIT = 300;
+        public static string LogPath = rootPath + "errors.log";
+
+        private static string rootPath = AppDomain.CurrentDomain.BaseDirectory;
+        private static string resPath = rootPath + "res\\";
+        private static string[] resPaths = { resPath + "print\\", resPath + "ad\\img\\", resPath + "ad\\vid\\", resPath + "qr\\" };
+        private const int FOLDER_SIZE_LIMIT = 300;
+
 
         public static BitmapImage LoadImage(string filepath, int decodeWidth)
         {
@@ -38,13 +41,13 @@ namespace WechatPrinter.Support
 
         public static bool CheckFile(ResPathsEnum path, string filename)
         {
-            if (!Directory.Exists(ResPaths[(int)path]))
+            if (!Directory.Exists(resPaths[(int)path]))
             {
-                Directory.CreateDirectory(ResPaths[(int)path]);
+                Directory.CreateDirectory(resPaths[(int)path]);
                 //Console.WriteLine("File folder doesn't exists, created: " + ResPaths[(int)path]);
                 return false;
             }
-            else if (!File.Exists(ResPaths[(int)path] + filename))
+            else if (!File.Exists(resPaths[(int)path] + filename))
             {
                 Console.WriteLine("File doesn't exists: " + filename);
                 return false;
@@ -59,7 +62,7 @@ namespace WechatPrinter.Support
         public static string SaveFile(Stream stream, ResPathsEnum path, string filename)
         {
             DeleteOldFiles(path);
-            string filepath = ResPaths[(int)path];
+            string filepath = resPaths[(int)path];
             try
             {
                 if (!CheckFile(path, filename))
@@ -82,7 +85,7 @@ namespace WechatPrinter.Support
 
         public static void DeleteOldFiles(ResPathsEnum path)
         {
-            string filepath = ResPaths[(int)path];
+            string filepath = resPaths[(int)path];
             if (Directory.Exists(filepath))
             {
                 long size = 0;
@@ -107,7 +110,7 @@ namespace WechatPrinter.Support
             }
         }
 
-        public class FileCreateTimeComparer : IComparer
+        protected class FileCreateTimeComparer : IComparer
         {
             int IComparer.Compare(Object o1, Object o2)
             {
