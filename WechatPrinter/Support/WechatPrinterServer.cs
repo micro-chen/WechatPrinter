@@ -50,21 +50,39 @@ namespace WechatPrinter
         #endregion
 
         #region 获得打印图片
+        private bool isGettingPrintImg = false;
         public void GetPrintImg(Object o)
         {
-            if (!WechatPrinterConf.IsPrinting)
+            if (!WechatPrinterConf.IsPrinting && !isGettingPrintImg)
             {
                 BackgroundRun(delegate
                 {
                     Console.WriteLine("Start to get print images");
+                    isGettingPrintImg = true;
                     try
                     {
-                        PrintImgBean bean = HttpUtils.GetJson<PrintImgBean>(WechatPrinterConf.PrintImgUrl, null, true);
-                        if (bean.ImgUrl != null && !bean.ImgUrl.Equals(String.Empty))
+                        HideNetworkError();
+
+                        PrintImgBean bean = null;
+
+                        string jsonString = HttpUtils.GetText(WechatPrinterConf.PrintImgUrl, null, true, true);
+
+                        if (jsonString.Contains("verifyCode"))
+                        {
+                            jsonString = jsonString.Replace("[", "").Replace("]", "");
+                            PrintStatusBean printStatusBean = HttpUtils.GetJson<PrintStatusBean>(jsonString);
+                            WechatPrinterConf.Captcha = printStatusBean.Captcha;
+                            ShowCaptcha();
+                        }
+                        else
+                        {
+                            bean = HttpUtils.GetJson<PrintImgBean>(WechatPrinterConf.PrintImgUrl, null, true, true);
+                        }
+
+                        if (bean != null && bean.ImgUrl != null && !bean.ImgUrl.Equals(String.Empty))
                         {
                             WechatPrinterConf.IsPrinting = true;
                             ShowDownloading();
-                            HideNetworkError();
                             try
                             {
                                 string filepath = HttpUtils.GetFile(FileUtils.ResPathsEnum.PrintImg, bean.ImgUrl, null);
@@ -85,15 +103,18 @@ namespace WechatPrinter
                                 HideDownloading();
                                 ShowNetworkError(ErrorUtils.HandleNetworkError(ErrorUtils.Error.NetworkFileNotFound));
                             }
-
-
                         }
                     }
                     catch (Exception ex)
                     {
                         Console.WriteLine("[GetPrintImg Error]");
+                        Console.WriteLine(ex.Message);
                         Console.WriteLine(ex.StackTrace);
                         ShowNetworkError(ErrorUtils.HandleNetworkError(ErrorUtils.Error.NetworkUnavailable));
+                    }
+                    finally
+                    {
+                        isGettingPrintImg = false;
                     }
                 });
             }
@@ -110,11 +131,12 @@ namespace WechatPrinter
                     HideNetworkError();
                     Dictionary<string, string> param = new Dictionary<string, string>();
                     param.Add(WechatPrinterConf.ParamKeys.Status, ((int)WechatPrinterConf.PrintImgStatus.Success).ToString());
+                    Console.WriteLine("PRINT SUCCESS IMAGE ID: " + imgId.ToString());
                     param.Add(WechatPrinterConf.ParamKeys.Id, imgId.ToString());
                     PrintStatusBean bean = HttpUtils.GetJson<PrintStatusBean>(WechatPrinterConf.PrintImgCallBackUrl, param, true);//TODO 打印成功
                     Console.WriteLine("PRINT SUCCESS RETURN CAPTCHA: " + bean.Captcha);
                     WechatPrinterConf.Captcha = bean.Captcha;
-                    ShowCaptcha();//TODO 测试下
+                    ShowCaptcha();
                 }
                 catch (Exception ex)
                 {
@@ -235,6 +257,7 @@ namespace WechatPrinter
                 {
                     Console.WriteLine("[ShowAdImg Error]");
                     Console.WriteLine(ex.StackTrace);
+                    stage.Stage(-1);
                 }
             });
 
@@ -294,7 +317,7 @@ namespace WechatPrinter
         private bool adVidInit = false;
         private static StringCollection adVidFilepaths = null;
         private int adVidCounter = 0;
-        public void ShowAdVid(StringCollection urls, ILoadStage stage)
+        public void ShowAdVid(StringCollection urls, ILoadStage stage, IDownloadProgress progress = null)
         {
             BackgroundRun(delegate
             {
@@ -314,18 +337,18 @@ namespace WechatPrinter
                     //}
                     //if (flag)
                     //{
-                        StringCollection filepaths = HttpUtils.GetFiles(FileUtils.ResPathsEnum.AdVid, urls, null);
-                        adVidCounter = 0;
-                        if (filepaths.Count > 0)
-                        {
-                            adVidFilepaths = filepaths;
-                            AdVidEnded(null, null);
-                        }
-                        if (!adVidInit)
-                        {
-                            page.mediaElement_ad.MediaEnded += AdVidEnded;
-                            adVidInit = true;
-                        }
+                    StringCollection filepaths = HttpUtils.GetFiles(FileUtils.ResPathsEnum.AdVid, urls, null, false, progress);
+                    adVidCounter = 0;
+                    if (filepaths.Count > 0)
+                    {
+                        adVidFilepaths = filepaths;
+                        AdVidEnded(null, null);
+                    }
+                    if (!adVidInit)
+                    {
+                        page.mediaElement_ad.MediaEnded += AdVidEnded;
+                        adVidInit = true;
+                    }
                     //}
                     if (stage != null)
                         stage.Stage(1 << 1);
@@ -394,14 +417,18 @@ namespace WechatPrinter
         private const int ERROR_TIMER_INTERVAL = 2 * 1000;
 
         #region 网络错误
-        private bool networkErrorTimerFlag;
+        private bool networkErrorTimerFlag = false;
         public void ShowNetworkError(string errorString)
         {
-            networkErrorTimerFlag = true;
-            TimerState errorTimerState = new TimerState();
-            errorTimerState.Filepaths = new StringCollection() { errorString };
-            Timer errorTimer = new Timer(NetworkErrorTimerCallBack, errorTimerState, 0, ERROR_TIMER_INTERVAL);
-            errorTimerState.MainTimer = errorTimer;
+            if (!networkErrorTimerFlag)
+            {
+                networkErrorTimerFlag = true;
+
+                TimerState errorTimerState = new TimerState();
+                errorTimerState.Filepaths = new StringCollection() { errorString };
+                Timer errorTimer = new Timer(NetworkErrorTimerCallBack, errorTimerState, 0, ERROR_TIMER_INTERVAL);
+                errorTimerState.MainTimer = errorTimer;
+            }
         }
         private void NetworkErrorTimerCallBack(Object state)
         {

@@ -70,6 +70,7 @@
     <Reference Include="System.Printing" />
     <Reference Include="System.Web" />
     <Reference Include="System.Web.Extensions" />
+    <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xml" />
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.Core" />
@@ -184,9 +185,6 @@
     <Resource Include="Resource\Image\smkj.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Resource>
-  </ItemGroup>
-  <ItemGroup>
-    <Resource Include="Resource\Image\qrcode.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

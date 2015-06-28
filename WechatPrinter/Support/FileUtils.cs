@@ -59,7 +59,7 @@ namespace WechatPrinter.Support
             }
         }
 
-        public static string SaveFile(Stream stream, ResPathsEnum path, string filename)
+        public static string SaveFile(Stream stream, ResPathsEnum path, string filename, IDownloadProgress progress = null)
         {
             DeleteOldFiles(path);
             string filepath = resPaths[(int)path];
@@ -69,6 +69,7 @@ namespace WechatPrinter.Support
                 {
                     using (FileStream fs = File.Create(filepath + filename))
                     {
+                        //CopyStream(stream, fs, progress);
                         stream.CopyTo(fs);
                     }
                 }
@@ -107,6 +108,26 @@ namespace WechatPrinter.Support
                             break;
                     }
                 }
+            }
+        }
+
+        public static String GetLatestFile(ResPathsEnum path)
+        {
+            return new DirectoryInfo(resPaths[(int)path]).GetFiles().OrderByDescending(f => f.LastWriteTime).First().FullName;
+        }
+
+        private static void CopyStream(Stream input, Stream output, IDownloadProgress progress = null)
+        {
+            const int bufferSize = 32768;
+            byte[] buffer = new byte[bufferSize];
+            int buffered = 0;
+            int read;
+            while ((read = input.Read(buffer, 0, buffer.Length)) > 0)
+            {
+                output.Write(buffer, 0, read);
+                buffered += read;
+                if (progress != null)
+                    progress.Progress(-2, read);
             }
         }
 

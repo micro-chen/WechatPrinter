@@ -13,7 +13,7 @@ namespace WechatPrinter.Support
     public class HttpUtils
     {
 
-        public static WebResponse DoGet(string url, Dictionary<string, string> param)
+        public static WebResponse DoGet(string url, Dictionary<string, string> param, bool noRetry = false)
         {
             if (url == null || url.Equals(""))
             {
@@ -44,37 +44,46 @@ namespace WechatPrinter.Support
                 }
                 catch (Exception e)
                 {
-                    retry--;
-                    Console.WriteLine("[HttpUtils: DoGet Error: Retry[{0}/{1}]", WechatPrinterConf.HttpRetryTimes - retry, WechatPrinterConf.HttpRetryTimes);
-                    if (retry == 0)
+                    if (!noRetry)
                     {
-                        Console.WriteLine("[HttpUtils: DoGet Error: Exit]");
-
-                        if (WechatPrinterConf.DEBUG)
+                        retry--;
+                        Console.WriteLine("[HttpUtils: DoGet Error: Retry[{0}/{1}]", WechatPrinterConf.HttpRetryTimes - retry, WechatPrinterConf.HttpRetryTimes);
+                        if (retry == 0)
                         {
-                            if (!File.Exists(FileUtils.LogPath))
-                            {
-                                File.Create(FileUtils.LogPath).Close();
-                            }
-                            using (StreamWriter sw = File.AppendText(FileUtils.LogPath))
-                            {
-                                sw.WriteLine(@"+GET++++++++++++++++++++++++++++++++++++++++");
-                                sw.WriteLine(url);
-                                sw.WriteLine(e.Source);
-                                sw.WriteLine(e.Message);
-                                sw.WriteLine(e.StackTrace);
-                                sw.WriteLine();
-                            }
-                        }
 
+                            if (WechatPrinterConf.DEBUG)
+                            {
+                                if (!File.Exists(FileUtils.LogPath))
+                                {
+                                    File.Create(FileUtils.LogPath).Close();
+                                }
+                                using (StreamWriter sw = File.AppendText(FileUtils.LogPath))
+                                {
+                                    sw.WriteLine(@"+GET++++++++++++++++++++++++++++++++++++++++");
+                                    sw.WriteLine(url);
+                                    sw.WriteLine(e.Source);
+                                    sw.WriteLine(e.Message);
+                                    sw.WriteLine(e.StackTrace);
+                                    sw.WriteLine();
+                                }
+                            }
+
+                            Console.WriteLine("[HttpUtils: DoGet Error: " + url + "\n\t" + e.Message + "\n\t" + e.StackTrace);
+
+                            throw e;
+                        }
+                    }
+                    else
+                    {
                         throw e;
                     }
+
                 }
             }
             throw new Exception();
         }
 
-        public static WebResponse DoPost(string url, Dictionary<string, string> param)
+        public static WebResponse DoPost(string url, Dictionary<string, string> param, bool noRetry = false)
         {
             if (url == null || url.Equals(""))
             {
@@ -110,43 +119,52 @@ namespace WechatPrinter.Support
                 }
                 catch (Exception e)
                 {
-                    retry--;
-                    Console.WriteLine("[HttpUtils: DoPost Error: Retry[{0}/{1}]", WechatPrinterConf.HttpRetryTimes - retry, WechatPrinterConf.HttpRetryTimes);
-                    if (retry == 0)
+                    if (!noRetry)
                     {
-                        Console.WriteLine("[HttpUtils: DoPost Error: Exit]");
-
-                        if (WechatPrinterConf.DEBUG)
+                        retry--;
+                        Console.WriteLine("[HttpUtils: DoPost Error: Retry[{0}/{1}]", WechatPrinterConf.HttpRetryTimes - retry, WechatPrinterConf.HttpRetryTimes);
+                        if (retry == 0)
                         {
-                            if (!File.Exists(FileUtils.LogPath))
-                            {
-                                File.Create(FileUtils.LogPath).Close();
-                            }
-                            using (StreamWriter sw = File.AppendText(FileUtils.LogPath))
-                            {
-                                sw.WriteLine(@"++++++++++++++++++++POST++++++++++++++++++++");
-                                sw.WriteLine(url);
-                                sw.WriteLine(e.Source);
-                                sw.WriteLine(e.Message);
-                                sw.WriteLine(e.StackTrace);
-                                sw.WriteLine();
-                            }
-                        }
+                            Console.WriteLine("[HttpUtils: DoPost Error: Exit]");
 
+                            if (WechatPrinterConf.DEBUG)
+                            {
+                                if (!File.Exists(FileUtils.LogPath))
+                                {
+                                    File.Create(FileUtils.LogPath).Close();
+                                }
+                                using (StreamWriter sw = File.AppendText(FileUtils.LogPath))
+                                {
+                                    sw.WriteLine(@"++++++++++++++++++++POST++++++++++++++++++++");
+                                    sw.WriteLine(url);
+                                    sw.WriteLine(e.Source);
+                                    sw.WriteLine(e.Message);
+                                    sw.WriteLine(e.StackTrace);
+                                    sw.WriteLine();
+                                }
+                            }
+
+                            throw e;
+                        }
+                    }
+                    else
+                    {
                         throw e;
                     }
+
                 }
             }
             throw new Exception();
         }
 
-        public static string GetText(string url, Dictionary<string, string> param, bool isPost = false)
+
+        public static string GetText(string url, Dictionary<string, string> param, bool isPost = false, bool noRetry = false)
         {
             try
             {
                 if (!isPost)
                 {
-                    using (WebResponse response = DoGet(url, param))
+                    using (WebResponse response = DoGet(url, param, noRetry))
                     {
                         using (Stream stream = response.GetResponseStream())
                         {
@@ -160,8 +178,10 @@ namespace WechatPrinter.Support
                 }
                 else
                 {
-                    using (WebResponse response = DoPost(url, param))
+                    using (WebResponse response = DoPost(url, param, noRetry))
                     {
+
+
                         using (Stream stream = response.GetResponseStream())
                         {
                             using (StreamReader reader = new StreamReader(stream))
@@ -182,10 +202,21 @@ namespace WechatPrinter.Support
 
         public static T GetJson<T>(string url, Dictionary<string, string> param, bool isPost = false)
         {
+            return GetJson<T>(url, param, isPost, false);
+        }
+
+        public static T GetJson<T>(string jsonString)
+        {
+            Console.WriteLine("Get Json: " + jsonString);
+            return new JavaScriptSerializer().Deserialize<T>(jsonString);
+        }
+
+        public static T GetJson<T>(string url, Dictionary<string, string> param, bool isPost = false, bool noRetry = false)
+        {
             T bean = default(T);
             try
             {
-                string text = GetText(url, param, isPost);
+                string text = GetText(url, param, isPost, noRetry);
                 Console.WriteLine("Get Json: " + text);
                 if (text != null && !text.Equals(String.Empty))
                 {
@@ -200,7 +231,7 @@ namespace WechatPrinter.Support
             return bean;
         }
 
-        public static string GetFile(FileUtils.ResPathsEnum path, string url, Dictionary<string, string> param, bool isPost = false)
+        public static string GetFile(FileUtils.ResPathsEnum path, string url, Dictionary<string, string> param, bool isPost = false, IDownloadProgress progress = null)
         {
             string filename;
             if (path == FileUtils.ResPathsEnum.PrintImg)
@@ -217,17 +248,22 @@ namespace WechatPrinter.Support
                 Console.WriteLine("GetFile: [" + path + "] " + filename);
                 if (!isPost)
                 {
-
-                    using (Stream stream = DoGet(url, param).GetResponseStream())
+                    WebResponse response = DoGet(url, param);
+                    //if(progress!=null)
+                    //    progress.Progress(response.ContentLength,-2);
+                    using (Stream stream = response.GetResponseStream())
                     {
-                        return FileUtils.SaveFile(stream, path, filename);
+                        return FileUtils.SaveFile(stream, path, filename, progress);
                     }
                 }
                 else
                 {
-                    using (Stream stream = DoPost(url, param).GetResponseStream())
+                    WebResponse response = DoPost(url, param);
+                    if (progress != null)
+                        progress.Progress(response.ContentLength, -2);
+                    using (Stream stream = response.GetResponseStream())
                     {
-                        return FileUtils.SaveFile(stream, path, filename);
+                        return FileUtils.SaveFile(stream, path, filename, progress);
                     }
                 }
             }
@@ -238,75 +274,83 @@ namespace WechatPrinter.Support
             }
         }
 
-        public static StringCollection GetFiles(FileUtils.ResPathsEnum path, StringCollection urls, Dictionary<string, string> param, bool isPost = false)
+        public static StringCollection GetFiles(FileUtils.ResPathsEnum path, StringCollection urls, Dictionary<string, string> param, bool isPost = false, IDownloadProgress progress = null)
         {
             StringCollection filepaths = new StringCollection();
             foreach (string url in urls)
             {
                 try
                 {
-                    string filepath = HttpUtils.GetFile(path, url, param, isPost);
+                    string filepath = HttpUtils.GetFile(path, url, param, isPost, progress);
                     if (!filepath.Equals(String.Empty))
                         filepaths.Add(filepath);
                 }
                 catch (Exception ex)
                 {
-                    Console.WriteLine("[HttpUtils: GetFiles:for Error: {0}]", url);
-                    Console.WriteLine(ex.Message);
+                    Console.WriteLine("[HttpUtils: GetFiles:for Error: {0}\n\t{1}", url,ex.Message);
+                    throw ex;
                 }
             }
             return filepaths;
         }
 
-        private static string EncodeParamFromMap(Dictionary<string, string> param, bool isPost)
+        private static string EncodeParamFromMap(Dictionary<string, string> param, bool isPost = false)
         {
-            if (param == null)
-            {
-                param = new Dictionary<string, string>();
-            }
-            if (!param.ContainsKey(WechatPrinterConf.ParamKeys.Id))
-                param.Add(WechatPrinterConf.ParamKeys.Id, WechatPrinterConf.Id);
-            if (!param.ContainsKey(WechatPrinterConf.ParamKeys.Token))
-                param.Add(WechatPrinterConf.ParamKeys.Token, WechatPrinterConf.Token);
+            //if (param == null)
+            //{
+            //    param = new Dictionary<string, string>();
+            //}
+            //if (!param.ContainsKey(WechatPrinterConf.ParamKeys.Id))
+            //    param.Add(WechatPrinterConf.ParamKeys.Id, WechatPrinterConf.Id);
+            //if (!param.ContainsKey(WechatPrinterConf.ParamKeys.Token))
+            //    param.Add(WechatPrinterConf.ParamKeys.Token, WechatPrinterConf.Token);
 
             //if (param == null || param.Count == 0)
             //    return "";
 
-            StringBuilder sb = new StringBuilder();
+            StringBuilder sb = new StringBuilder("");
 
-
-            bool isFrist = true;
-
-            if (!isPost)
+            if (param != null)
             {
-                foreach (var item in param)
-                {
-                    if (isFrist)
-                    {
-                        sb.Append("?");
-                        isFrist = false;
-                    }
-                    else
-                        sb.Append("&");
-                    sb.Append(System.Web.HttpUtility.UrlEncode(item.Key, Encoding.UTF8)).Append("=").Append(System.Web.HttpUtility.UrlEncode(item.Value, Encoding.UTF8));
-                }
-            }
-            else
-            {
-                foreach (var item in param)
-                {
-                    if (isFrist)
-                    {
-                        isFrist = false;
+                bool isFrist = true;
 
+                if (!isPost)
+                {
+                    foreach (var item in param)
+                    {
+                        if (isFrist)
+                        {
+                            sb.Append("?");
+                            isFrist = false;
+                        }
+                        else
+                            sb.Append("&");
+                        sb.Append(System.Web.HttpUtility.UrlEncode(item.Key, Encoding.UTF8)).Append("=").Append(System.Web.HttpUtility.UrlEncode(item.Value, Encoding.UTF8));
                     }
-                    else
-                        sb.Append("&");
-                    sb.Append(item.Key).Append("=").Append(item.Value);
                 }
-            }
+                else
+                {
+                    foreach (var item in param)
+                    {
+                        if (isFrist)
+                        {
+                            isFrist = false;
 
+                        }
+                        else
+                            sb.Append("&");
+                        sb.Append(item.Key).Append("=").Append(item.Value);
+                    }
+                }
+
+                Console.WriteLine("[HttpUtils:Encode]: " + sb.ToString());
+            }
             return sb.ToString();
         }
+    }
+
+    public interface IDownloadProgress
+    {
+        void Progress(long total, long read);
     }
 }

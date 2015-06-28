@@ -162,14 +162,15 @@ namespace WechatPrinter.Support
 
                                 BitmapImage qr = new BitmapImage();
                                 qr.BeginInit();
-                                qr.UriSource = new Uri("pack://application:,,,/Resource/Image/qrcode.png");
+                                //qr.UriSource = new Uri("pack://application:,,,/Resource/Image/qrcode.jpg");
+                                qr.UriSource = new Uri(FileUtils.GetLatestFile(FileUtils.ResPathsEnum.QR));
                                 qr.EndInit();
                                 qr.Freeze();
 
                                 var group = new DrawingGroup();
                                 //group.Children.Add(new ImageDrawing(tbi, new Rect(WechatPrinterConf.PrinterWidthPos + WechatPrinterConf.PrinterWidth / 2d - (tbi.PixelWidth / 2d), WechatPrinterConf.PrinterHeightPos, tbi.PixelWidth * (WechatPrinterConf.ScreenDpi / WechatPrinterConf.PrinterDpi), tbi.PixelHeight * (WechatPrinterConf.ScreenDpi / WechatPrinterConf.PrinterDpi))));
                                 group.Children.Add(new ImageDrawing(tbi, new Rect(WechatPrinterConf.PrinterWidthPos + ((WechatPrinterConf.PrinterWidth - tbi.PixelWidth) / 2d) * (WechatPrinterConf.ScreenDpi / WechatPrinterConf.PrinterDpi), WechatPrinterConf.PrinterHeightPos + ((WechatPrinterConf.PrinterHeight - tbi.PixelHeight) / 2d) * (WechatPrinterConf.ScreenDpi / WechatPrinterConf.PrinterDpi), tbi.PixelWidth * (WechatPrinterConf.ScreenDpi / WechatPrinterConf.PrinterDpi), tbi.PixelHeight * (WechatPrinterConf.ScreenDpi / WechatPrinterConf.PrinterDpi))));
-                                group.Children.Add(new ImageDrawing(logo, new Rect(WechatPrinterConf.PrinterLogoWidthPos, WechatPrinterConf.PrinterLogoHeightPos, WechatPrinterConf.PrinterLogoHeight * 5.65 * (WechatPrinterConf.ScreenDpi / WechatPrinterConf.PrinterDpi), WechatPrinterConf.PrinterLogoHeight * (WechatPrinterConf.ScreenDpi / WechatPrinterConf.PrinterDpi))));
+                                group.Children.Add(new ImageDrawing(logo, new Rect(WechatPrinterConf.PrinterLogoWidthPos, WechatPrinterConf.PrinterLogoHeightPos, WechatPrinterConf.PrinterLogoWidth * (WechatPrinterConf.ScreenDpi / WechatPrinterConf.PrinterDpi), WechatPrinterConf.PrinterLogoHeight * (WechatPrinterConf.ScreenDpi / WechatPrinterConf.PrinterDpi))));
                                 group.Children.Add(new ImageDrawing(qr, new Rect(WechatPrinterConf.PrinterQrWidthPos, WechatPrinterConf.PrinterQrHeightPos, WechatPrinterConf.PrinterQrHeight * (WechatPrinterConf.ScreenDpi / WechatPrinterConf.PrinterDpi), WechatPrinterConf.PrinterQrHeight * (WechatPrinterConf.ScreenDpi / WechatPrinterConf.PrinterDpi))));
 
                                 var vis = new DrawingVisual();

@@ -23,7 +23,7 @@ namespace WechatPrinter
     /// <summary>
     /// Loading.xaml 的交互逻辑
     /// </summary>
-    public partial class LoadingPage : Page, ILoadStage
+    public partial class LoadingPage : Page, ILoadStage, IDownloadProgress
     {
         ILoadStatus status;
 
@@ -117,9 +117,8 @@ namespace WechatPrinter
                             }
                             catch
                             {
-                                Window window = (MainWindow)Window.GetWindow(this);
                                 MessageBox.Show("微信打印服务器正在维护", "提示", MessageBoxButton.OK, MessageBoxImage.Information);
-                                window.Close();
+                                Window.GetWindow(this).Close();
                             }
 
                         }
@@ -133,33 +132,64 @@ namespace WechatPrinter
         private static int sum = 0;
         public void Stage(int stage)
         {
-            sum += stage;
-            Dispatcher.BeginInvoke(new Action(delegate
+            if (stage == -1)
             {
-                switch (sum)
+                if (MessageBox.Show("因网络原因加载资源失败，重试？", "错误", MessageBoxButton.YesNo, MessageBoxImage.Error) == MessageBoxResult.Yes)
                 {
-                    case 0:
-                        label_loading.Content = "加载资源...";
-                        break;
-                    case 1:
-                        label_loading.Content = "图片加载完成，加载视频...";
-                        break;
-                    case 1 << 1:
-                        label_loading.Content = "视频加载完成，加载图片...";
-                        break;
-                    default:
-                        label_loading.Content = "资源加载完成，启动中...";
-                        DispatcherTimer timer = new DispatcherTimer();
-                        timer.Tick += (o, e) =>
-                        {
-                            ((DispatcherTimer)o).Stop();
-                            status.LoadCompleted(page);
-                        };
-                        timer.Interval = new TimeSpan(0, 0, 0, 0, LOADING_WAIT_TIME);
-                        timer.Start();
-                        break;
+                    System.Windows.Forms.Application.Restart();
                 }
-            }));
+                Dispatcher.BeginInvoke(new Action(delegate
+                {
+                    Application.Current.Shutdown();
+                }));
+            }
+            else
+            {
+                sum += stage;
+                Dispatcher.BeginInvoke(new Action(delegate
+                {
+                    switch (sum)
+                    {
+                        case 0:
+                            label_loading.Content = "加载资源...";
+                            break;
+                        case 1:
+                            label_loading.Content = "图片加载完成，加载视频...";
+                            break;
+                        case 1 << 1:
+                            label_loading.Content = "视频加载完成，加载图片...";
+                            break;
+                        default:
+                            label_loading.Content = "资源加载完成，启动中...";
+                            DispatcherTimer timer = new DispatcherTimer();
+                            timer.Tick += (o, e) =>
+                            {
+                                ((DispatcherTimer)o).Stop();
+                                status.LoadCompleted(page);
+                            };
+                            timer.Interval = new TimeSpan(0, 0, 0, 0, LOADING_WAIT_TIME);
+                            timer.Start();
+                            break;
+                    }
+                }));
+            }
+
+        }
+
+        private long vidLength = 0;
+        public void Progress(long total, long read)
+        {
+            if (total > 0 && read == -2)
+            {
+                vidLength = total;
+            }
+            if (sum == 1 && total == -2 && read > 0)
+            {
+                Dispatcher.BeginInvoke(new Action(delegate
+               { 
+                   label_loading.Content = "图片加载完成，加载视频... " + Convert.ToString((int)(((double)read / (double)total) * 100)) + "%"; 
+               }));
+            }
         }
     }
 

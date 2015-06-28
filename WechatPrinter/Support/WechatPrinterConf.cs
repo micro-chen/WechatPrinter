@@ -22,8 +22,8 @@ namespace WechatPrinter.Support
         private const string PRINT_IMG_URL = "http://114.215.80.157/Home/Printer/getpic";
         private const string PRINT_IMG_CALLBACK_URL = "http://114.215.80.157/Home/Printer/stateReceive";
 
-        private const string PRINTER_NAME = "EPSON L300 Series";
-        //private const string PRINTER_NAME = "Microsoft XPS Document Writer";
+        //private const string PRINTER_NAME = "EPSON L300 Series";
+        private const string PRINTER_NAME = "Microsoft XPS Document Writer";
 
         private const double PRINT_EDGE = 832 * 0.0377;
         private const double PRINT_RATIO = SCREEN_DPI / PRINT_DPI;
@@ -34,11 +34,14 @@ namespace WechatPrinter.Support
         private const double PRINT_HEIGHT_POS = PRINT_EDGE * PRINT_RATIO;
         private const double PRINT_WIDTH_POS = PRINT_EDGE * PRINT_RATIO;
 
-        private const double PRINT_LOGO_HEIGHT = 27;
+        private const double PRINT_LOGO_HEIGHT = 55;
+        private const double PRINT_LOGO_WIDTH = PRINT_LOGO_HEIGHT*8;
+
         private const double PRINT_LOGO_HEIGHT_POS = (PRINT_HEIGHT + PRINT_EDGE * 2) * PRINT_RATIO;
         private const double PRINT_LOGO_WIDTH_POS = PRINT_WIDTH_POS;
         //private const double PRINT_LOGO_WIDTH_POS = PRINT_WIDTH * (PRINT_RATIO) / 2 - (PRINT_LOGO_HEIGHT * (PRINT_RATIO) * 5.65) / 2 + PRINT_WIDTH_POS;
-        private const double PRINT_QR_HEIGHT = PRINT_LOGO_HEIGHT * 8;
+        //private const double PRINT_QR_HEIGHT = PRINT_LOGO_HEIGHT * 8;
+        private const double PRINT_QR_HEIGHT = 216;
         private const double PRINT_QR_HEIGHT_POS = PRINT_LOGO_HEIGHT_POS;
         private const double PRINT_QR_WIDTH_POS = PRINT_WIDTH_POS + (PRINT_WIDTH - PRINT_QR_HEIGHT) * PRINT_RATIO;
         private const double PRINT_DPI = 300;
@@ -56,8 +59,8 @@ namespace WechatPrinter.Support
 
         private static bool isPrinting = false;
 
-        private const int HTTP_RETRY_TIMES = 3;
-        private const int HTTP_TIMTOUT = 10 * 1000;
+        private const int HTTP_RETRY_TIMES = 1;
+        private const int HTTP_TIMTOUT = 3 * 1000;
 
         public static void Init(InfoBean bean)
         {
@@ -98,6 +101,7 @@ namespace WechatPrinter.Support
         public static double PrinterHeightPos { get { return PRINT_HEIGHT_POS; } }
         public static double PrinterWidthPos { get { return PRINT_WIDTH_POS; } }
         public static double PrinterLogoHeight { get { return PRINT_LOGO_HEIGHT; } }
+        public static double PrinterLogoWidth { get { return PRINT_LOGO_WIDTH; } }
         public static double PrinterLogoHeightPos { get { return PRINT_LOGO_HEIGHT_POS; } }
         public static double PrinterLogoWidthPos { get { return PRINT_LOGO_WIDTH_POS; } }
         public static double PrinterQrHeight { get { return PRINT_QR_HEIGHT; } }
