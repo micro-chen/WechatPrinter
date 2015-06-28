@@ -22,8 +22,8 @@ namespace WechatPrinter.Support
         private const string PRINT_IMG_URL = "http://114.215.80.157/Home/Printer/getpic";
         private const string PRINT_IMG_CALLBACK_URL = "http://114.215.80.157/Home/Printer/stateReceive";
 
-        //private const string PRINTER_NAME = "EPSON L300 Series";
-        private const string PRINTER_NAME = "Microsoft XPS Document Writer";
+        private const string PRINTER_NAME = "EPSON L300 Series";
+        //private const string PRINTER_NAME = "Microsoft XPS Document Writer";
 
         private const double PRINT_EDGE = 832 * 0.0377;
         private const double PRINT_RATIO = SCREEN_DPI / PRINT_DPI;

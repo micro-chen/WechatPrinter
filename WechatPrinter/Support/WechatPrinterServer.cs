@@ -67,7 +67,7 @@ namespace WechatPrinter
 
                         string jsonString = HttpUtils.GetText(WechatPrinterConf.PrintImgUrl, null, true, true);
 
-                        if (jsonString.Contains("verifyCode"))
+                        if (!jsonString.Contains("id") && !jsonString.Contains("url") && jsonString.Contains("verifyCode"))
                         {
                             jsonString = jsonString.Replace("[", "").Replace("]", "");
                             PrintStatusBean printStatusBean = HttpUtils.GetJson<PrintStatusBean>(jsonString);
