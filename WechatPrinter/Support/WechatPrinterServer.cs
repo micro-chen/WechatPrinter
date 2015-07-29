@@ -65,10 +65,15 @@ namespace WechatPrinter
 
                         PrintImgBean bean = null;
 
-                        string jsonString = HttpUtils.GetText(WechatPrinterConf.PrintImgUrl, null, true, true);
+                        Dictionary<string, string> param = new Dictionary<string, string>();
+                        param.Add(WechatPrinterConf.ParamKeys.Id, WechatPrinterConf.Id);
 
-                        if (!jsonString.Contains("id") && !jsonString.Contains("url") && jsonString.Contains("verifyCode"))
+                        string jsonString = HttpUtils.GetText(WechatPrinterConf.PrintImgUrl, param, true, true);
+
+                        if (!jsonString.Contains("url"))
                         {
+                            Console.WriteLine("No pic to print");
+
                             jsonString = jsonString.Replace("[", "").Replace("]", "");
                             PrintStatusBean printStatusBean = HttpUtils.GetJson<PrintStatusBean>(jsonString);
                             WechatPrinterConf.Captcha = printStatusBean.Captcha;
@@ -76,7 +81,7 @@ namespace WechatPrinter
                         }
                         else
                         {
-                            bean = HttpUtils.GetJson<PrintImgBean>(WechatPrinterConf.PrintImgUrl, null, true, true);
+                            bean = HttpUtils.GetJson<PrintImgBean>(jsonString);
                         }
 
                         if (bean != null && bean.ImgUrl != null && !bean.ImgUrl.Equals(String.Empty))
@@ -132,7 +137,8 @@ namespace WechatPrinter
                     Dictionary<string, string> param = new Dictionary<string, string>();
                     param.Add(WechatPrinterConf.ParamKeys.Status, ((int)WechatPrinterConf.PrintImgStatus.Success).ToString());
                     Console.WriteLine("PRINT SUCCESS IMAGE ID: " + imgId.ToString());
-                    param.Add(WechatPrinterConf.ParamKeys.Id, imgId.ToString());
+                    param.Add(WechatPrinterConf.ParamKeys.Pid, imgId.ToString());
+                    param.Add(WechatPrinterConf.ParamKeys.Id, WechatPrinterConf.Id);
                     PrintStatusBean bean = HttpUtils.GetJson<PrintStatusBean>(WechatPrinterConf.PrintImgCallBackUrl, param, true);//TODO 打印成功
                     Console.WriteLine("PRINT SUCCESS RETURN CAPTCHA: " + bean.Captcha);
                     WechatPrinterConf.Captcha = bean.Captcha;

@@ -180,8 +180,6 @@ namespace WechatPrinter.Support
                 {
                     using (WebResponse response = DoPost(url, param, noRetry))
                     {
-
-
                         using (Stream stream = response.GetResponseStream())
                         {
                             using (StreamReader reader = new StreamReader(stream))

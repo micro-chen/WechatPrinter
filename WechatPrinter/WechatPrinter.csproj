@@ -174,17 +174,13 @@
     </BootstrapperPackage>
   </ItemGroup>
   <ItemGroup>
-    <Resource Include="Resource\Image\smkjblack.png" />
+    <Resource Include="Resource\Image\coolmore_white.png" />
   </ItemGroup>
   <ItemGroup>
-    <Resource Include="Resource\Image\background.jpg">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Resource>
+    <Resource Include="Resource\Image\coolmore_black.png" />
   </ItemGroup>
   <ItemGroup>
-    <Resource Include="Resource\Image\smkj.png">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Resource>
+    <Resource Include="Resource\Image\bg_new.jpg" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

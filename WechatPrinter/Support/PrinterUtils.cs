@@ -150,13 +150,12 @@ namespace WechatPrinter.Support
 
                                 targetScale = WechatPrinterConf.PrinterWidth / width;
                                 tbi.Transform = new ScaleTransform(targetScale, targetScale);
-
                                 tbi.EndInit();
                                 tbi.Freeze();
 
                                 BitmapImage logo = new BitmapImage();
                                 logo.BeginInit();
-                                logo.UriSource = new Uri("pack://application:,,,/Resource/Image/smkjblack.png");
+                                logo.UriSource = new Uri(WechatPrinterConf.PrinterLogoFilePath);
                                 logo.EndInit();
                                 logo.Freeze();
 
@@ -188,7 +187,21 @@ namespace WechatPrinter.Support
                             }
                             catch (Exception ex)
                             {
-                                Console.WriteLine(ex.StackTrace);    
+                                Console.WriteLine(ex.StackTrace);
+
+                                if (WechatPrinterConf.DEBUG)
+                                {
+                                    if (!File.Exists(FileUtils.LogPath))
+                                    {
+                                        File.Create(FileUtils.LogPath).Close();
+                                    }
+                                    using (StreamWriter sw = File.AppendText(FileUtils.LogPath))
+                                    {
+                                        sw.WriteLine(@"++++++++++++++++++++PRINT++++++++++++++++++++");
+                                        sw.WriteLine(ex.StackTrace);
+                                        sw.WriteLine();
+                                    }
+                                }
                             }
                         }
                     }
@@ -234,6 +247,21 @@ namespace WechatPrinter.Support
                     PrinterUtils.imgId = EmptyImgId;
 
                     //TODO 打印机错误
+
+                    if (WechatPrinterConf.DEBUG)
+                    {
+                        if (!File.Exists(FileUtils.LogPath))
+                        {
+                            File.Create(FileUtils.LogPath).Close();
+                        }
+                        using (StreamWriter sw = File.AppendText(FileUtils.LogPath))
+                        {
+                            sw.WriteLine(@"++++++++++++++++++++PRINT ERROR++++++++++++++++++++");
+                            sw.WriteLine(printQueue.QueueStatus);
+                            sw.WriteLine();
+                        }
+                    }
+
                     Console.WriteLine("Printer Error: {0}", printQueue.QueueStatus);
                 }
                 Thread.Sleep(PRINTER_CHECK_INTERVAL);
