@@ -23,13 +23,14 @@ namespace WechatPrinter
     /// <summary>
     /// Loading.xaml 的交互逻辑
     /// </summary>
-    public partial class LoadingPage : Page, ILoadStage, IDownloadProgress
+    public partial class LoadingPage : Page, IDownloadProgress
     {
         ILoadStatus status;
 
         //"http://ww1.sinaimg.cn/bmiddle/6cf8a22bjw1eodufymcyqj218g0tndqr.jpg"
 
-        private MainPage page;
+        private MainPage page = null;
+        private WechatPrinterServer server = null;
 
         public LoadingPage(ILoadStatus status)
         {
@@ -88,32 +89,48 @@ namespace WechatPrinter
                         else
                         {
 
-                            WechatPrinterConf.Init(info);
+                            for (int i = 0; i < info.picUrl.Count; i++)
+                            {
+                                info.picUrl[i] = WechatPrinterConf.PRE_URL + info.picUrl[i];
+                            }
+                            for (int i = 0; i < info.videoUrl.Count; i++)
+                            {
+                                info.videoUrl[i] = WechatPrinterConf.PRE_URL + info.videoUrl[i];
+                            }
+                            info.qrcodeUrl = WechatPrinterConf.PRE_URL + info.qrcodeUrl;
+
+
 
                             page = new MainPage();
-                            WechatPrinterServer server = new WechatPrinterServer(page);
-                            page.Server = server;
+                            server = new WechatPrinterServer(page);
 
                             try
                             {
-                                server.ShowCoName();
-
-                                server.ShowQRImg(WechatPrinterConf.QRCodeUrl);
-
-                                server.ShowAdVid(WechatPrinterConf.AdVidUrls, this);
-                                page.mediaElement_ad.Opacity = 1d;
-                                page.mediaElement_ad.Play();
-
-                                server.ShowAdImg(WechatPrinterConf.AdImgUrls, this);
-                                page.image_ad1.Opacity = 1d;
-                                page.image_ad2.Opacity = 1d;
-                                page.image_ad3.Opacity = 1d;
-
-
-                                server.ShowCaptcha();
-                                page.label_captcha.Opacity = 1d;
 
                                 Stage(0);
+
+                                ThreadPool.QueueUserWorkItem(delegate
+                                {
+                                    StringCollection adImgFilepaths = LoadAdImg(info.picUrl);
+                                    StringCollection adVidFilepaths = LoadAdVid(info.videoUrl);
+                                    string qrCodeFilepath = LoadQRCode(info.qrcodeUrl);
+                                    string logoFilepath = LoadLogo(info.logoUrl);
+
+                                    if (WechatPrinterConf.Init(
+                                        adImgFilepaths,
+                                        adVidFilepaths,
+                                        logoFilepath,
+                                        qrCodeFilepath,
+                                        info.name,
+                                        info.verifyCode))
+                                    {
+                                        Stage(1 << 2);
+                                    }
+                                    else
+                                    {
+                                        throw (new Exception());
+                                    }
+                                });
                             }
                             catch
                             {
@@ -128,7 +145,63 @@ namespace WechatPrinter
             }
         }
 
-        private const int LOADING_WAIT_TIME = 0 * 1000;
+        private string LoadQRCode(string url)
+        {
+            string s = String.Empty;
+            try
+            {
+                s = HttpUtils.GetFile(FileUtils.ResPathsEnum.QR, url, null);
+            }
+            catch
+            {
+
+            }
+            return s;
+        }
+        private string LoadLogo(string url)
+        {
+            string s = String.Empty;
+            try
+            {
+                s = HttpUtils.GetFile(FileUtils.ResPathsEnum.Logo, url, null);
+            }
+            catch
+            {
+
+            }
+            return s;
+        }
+        private StringCollection LoadAdImg(StringCollection urls)
+        {
+            StringCollection sc = new StringCollection();
+            try
+            {
+                sc = HttpUtils.GetFiles(FileUtils.ResPathsEnum.AdImg, urls, null);
+                Stage(1);
+            }
+            catch
+            {
+                Stage(-1);
+                Console.WriteLine("Load AdImg ERROR");
+            }
+            return sc;
+        }
+        private StringCollection LoadAdVid(StringCollection urls)
+        {
+            StringCollection sc = new StringCollection();
+            try
+            {
+                sc = HttpUtils.GetFiles(FileUtils.ResPathsEnum.AdVid, urls, null, false, this);
+                Stage(1 << 1);
+            }
+            catch
+            {
+                Stage(-1);
+                Console.WriteLine("Load AdVid ERROR");
+            }
+            return sc;
+        }
+
         private static int sum = 0;
         public void Stage(int stage)
         {
@@ -159,15 +232,28 @@ namespace WechatPrinter
                         case 1 << 1:
                             label_loading.Content = "视频加载完成，加载图片...";
                             break;
-                        default:
+                        case 1 << 2:
+
+                            server.ShowCoName();
+                            server.ShowQRImg();
+                            server.ShowAdVid();
+                            page.mediaElement_ad.Opacity = 1d;
+                            page.mediaElement_ad.Play();
+                            server.ShowAdImg();
+                            page.image_ad1.Opacity = 1d;
+                            page.image_ad2.Opacity = 1d;
+                            page.image_ad3.Opacity = 1d;
+                            server.ShowCaptcha();
+                            page.label_captcha.Opacity = 1d;
+
                             label_loading.Content = "资源加载完成，启动中...";
                             DispatcherTimer timer = new DispatcherTimer();
                             timer.Tick += (o, e) =>
                             {
                                 ((DispatcherTimer)o).Stop();
-                                status.LoadCompleted(page);
+                                status.LoadCompleted(page, server);
                             };
-                            timer.Interval = new TimeSpan(0, 0, 0, 0, LOADING_WAIT_TIME);
+                            timer.Interval = new TimeSpan(0, 0, 0, 0, WechatPrinterConf.LOADING_WAIT_TIME);
                             timer.Start();
                             break;
                     }
@@ -177,18 +263,28 @@ namespace WechatPrinter
         }
 
         private long vidLength = 0;
+        private int currentProgress = 0;
         public void Progress(long total, long read)
         {
             if (total > 0 && read == -2)
             {
                 vidLength = total;
             }
-            if (sum == 1 && total == -2 && read > 0)
+            if (total == -2 && read > 0)
             {
-                Dispatcher.BeginInvoke(new Action(delegate
-               { 
-                   label_loading.Content = "图片加载完成，加载视频... " + Convert.ToString((int)(((double)read / (double)total) * 100)) + "%"; 
-               }));
+
+                Console.WriteLine(read);
+                Console.WriteLine(vidLength);
+
+                currentProgress = (int)(((double)read / (double)vidLength) * 100);
+                if (sum == 1)
+                {
+                    Dispatcher.BeginInvoke(new Action(delegate
+                {
+                    label_loading.Content = "图片加载完成，加载视频... " + Convert.ToString(currentProgress) + "%";
+                }));
+                }
+
             }
         }
     }
@@ -202,11 +298,12 @@ namespace WechatPrinter
         public string qrcodeUrl { get; set; }
         public int verifyCode { get; set; }
         public string name { get; set; }
+        public string logoUrl { get; set; }
     }
 
     public interface ILoadStatus
     {
-        void LoadCompleted(MainPage page);
+        void LoadCompleted(MainPage page, WechatPrinterServer server);
     }
 
     public interface ILoadStage

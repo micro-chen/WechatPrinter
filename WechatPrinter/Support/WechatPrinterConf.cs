@@ -18,13 +18,15 @@ namespace WechatPrinter.Support
         private const string WECHAT_PRINTER_TOKEN = ""; //TODO token
 
         private const string INIT_URL = "http://114.215.80.157/Home/Printer/login";
-        private const string PRE_URL = "http://114.215.80.157";
+        public const string PRE_URL = "http://114.215.80.157";
         private const string PRINT_IMG_URL = "http://114.215.80.157/Home/Printer/getpic";
         private const string PRINT_IMG_CALLBACK_URL = "http://114.215.80.157/Home/Printer/stateReceive";
 
-        private const string PRINTER_NAME = "Canon iP2700 series";
+        public const int LOADING_WAIT_TIME = 0 * 1000;
+
+        //private const string PRINTER_NAME = "Canon iP2700 series";
         //private const string PRINTER_NAME = "EPSON L300 Series";
-        //private const string PRINTER_NAME = "Microsoft XPS Document Writer";
+        private const string PRINTER_NAME = "Microsoft XPS Document Writer";
 
         //private const double PRINT_EDGE = 832 * 0.0377;
         //private const double PRINT_RATIO = SCREEN_DPI / PRINT_DPI;
@@ -71,9 +73,10 @@ namespace WechatPrinter.Support
 
         private const int PRINT_WAIT_TIME = 8 * 1000;
 
-        private static StringCollection adImgUrls = null;
-        private static StringCollection adVidUrls = null;
-        private static string qrCodeUrl = String.Empty;
+        private static StringCollection adImgFilepaths = null;
+        private static StringCollection adVidFilepaths = null;
+        private static string qrCodeFilepath = String.Empty;
+        private static string logoFilepath = String.Empty;
         private static int captcha = -1;
         private static string coName = String.Empty;
 
@@ -82,33 +85,32 @@ namespace WechatPrinter.Support
         private const int HTTP_RETRY_TIMES = 1;
         private const int HTTP_TIMTOUT = 30 * 1000;
 
-        public static void Init(InfoBean bean)
+        public static bool Init(StringCollection adImgFilepaths, StringCollection adVidFilepaths, string logoFilepath, string qrCodeFilepath, string coName, int captcha)
         {
-            AdImgUrls = bean.picUrl;
-            AdVidUrls = bean.videoUrl;
-            QRCodeUrl = bean.qrcodeUrl;
-            Captcha = bean.verifyCode;
-            CoName = bean.name;
+            bool flag = true;
+            AdImgFilepaths = adImgFilepaths;
+            AdVidFilepaths = adVidFilepaths;
+            QRCodeFilepath = qrCodeFilepath;
+            LogoFilepath = logoFilepath;
+            Captcha = captcha;
+            CoName = coName;
 
-            for (int i = 0; i < AdImgUrls.Count; i++)
-            {
-                AdImgUrls[i] = PRE_URL + AdImgUrls[i];
-            }
-            for (int i = 0; i < AdVidUrls.Count; i++)
-            {
-                AdVidUrls[i] = PRE_URL + AdVidUrls[i];
-            }
-            QRCodeUrl = PRE_URL + QRCodeUrl;
+            if (QRCodeFilepath.Equals(String.Empty))
+                flag = false;
+
+            return flag;
         }
 
         public static string Id { get { return WECHAT_PRINTER_ID.ToString(); } }
         public static string Token { get { return WECHAT_PRINTER_TOKEN; } }
 
-        public static StringCollection AdImgUrls { get { return adImgUrls; } private set { adImgUrls = value; } }
-        public static StringCollection AdVidUrls { get { return adVidUrls; } private set { adVidUrls = value; } }
-        public static string QRCodeUrl { get { return qrCodeUrl; } private set { qrCodeUrl = value; } }
+        public static StringCollection AdImgFilepaths { get { return adImgFilepaths; } private set { adImgFilepaths = value; } }
+        public static StringCollection AdVidFilepaths { get { return adVidFilepaths; } private set { adVidFilepaths = value; } }
+        public static string QRCodeFilepath { get { return qrCodeFilepath; } private set { qrCodeFilepath = value; } }
+        public static string LogoFilepath { get { return logoFilepath; } set { logoFilepath = value; } }
         public static int Captcha { get { return captcha; } set { captcha = value; } }
         public static string CoName { get { return coName; } private set { coName = value; } }
+        
 
         public static string InitUrl { get { return INIT_URL; } }
         public static string PrintImgUrl { get { return PRINT_IMG_URL; } }

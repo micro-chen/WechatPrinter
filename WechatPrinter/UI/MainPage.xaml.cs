@@ -24,19 +24,6 @@ namespace WechatPrinter
     public partial class MainPage : Page
     {
         MainWindow window;
-        WechatPrinterServer server;
-        public WechatPrinterServer Server
-        {
-            get
-            {
-                return server;
-            }
-            set
-            {
-                server = value;
-            }
-        }
-
 
         public MainPage()
         {

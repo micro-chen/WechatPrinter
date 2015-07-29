@@ -31,12 +31,13 @@ namespace WechatPrinter
             //this.Topmost = true;
 
         }
-        public void LoadCompleted(MainPage page)
+        public void LoadCompleted(MainPage page, WechatPrinterServer server)
         {
             this.Content = page;
             page.Opacity = 0d;
             page.BeginAnimation(Page.OpacityProperty, new DoubleAnimation(1d, TimeSpan.FromMilliseconds(1000)));
-            page.Server.StartCheckPrintImg();
+
+            server.StartCheckPrintImg();
         }
 
         private void MainWindow1_Loaded(object sender, RoutedEventArgs e)

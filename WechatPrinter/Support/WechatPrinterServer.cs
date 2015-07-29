@@ -185,32 +185,6 @@ namespace WechatPrinter
         private DoubleAnimation fadeInAnim = new DoubleAnimation(1d, TimeSpan.FromMilliseconds(FADE_TIME));
         private DoubleAnimation fadeOutAnim = new DoubleAnimation(0d, TimeSpan.FromMilliseconds(FADE_TIME));
 
-        #region 更新二维码
-        public void ShowQRImg(string url)
-        {
-            BackgroundRun(delegate
-            {
-                try
-                {
-                    string filepath = HttpUtils.GetFile(FileUtils.ResPathsEnum.QR, url, null);
-                    if (filepath != null && !filepath.Equals(String.Empty))
-                    {
-                        BitmapImage bi = FileUtils.LoadImage(filepath, QR_IMG_DECODE_WIDTH);
-                        page.Dispatcher.BeginInvoke(new Action(delegate
-                        {
-                            page.image_QR.Source = bi;
-                        }));
-                    }
-                }
-                catch (Exception ex)
-                {
-                    Console.WriteLine("ShowQRImg Error");
-                    Console.WriteLine(ex.StackTrace);
-                }
-            });
-        }
-        #endregion
-
         #region 更新打印图片
         private void ShowPrintImg(string filepath)
         {
@@ -234,39 +208,32 @@ namespace WechatPrinter
 
         #endregion
 
-        #region 获得并更新广告图片
+        #region 更新二维码
+        public void ShowQRImg()
+        {
+            BitmapImage bi = FileUtils.LoadImage(WechatPrinterConf.QRCodeFilepath, QR_IMG_DECODE_WIDTH);
+            page.Dispatcher.BeginInvoke(new Action(delegate
+            {
+                page.image_QR.Source = bi;
+            }));
+        }
+        #endregion
+
+        #region 更新广告图片
         private const int AD_IMG_TIMER_INTERVAL = 15 * 1000;
         private const int AD_IMG_DECODE_WIDTH = 300;
         private const int AD_IMG_WAIT_BEFORE_IN = 300;
         private const int AD_IMG_FADE_TIME = 1 * 1000;
         private bool adImgTimerFlag;
-        public void ShowAdImg(StringCollection urls, ILoadStage stage)
+        public void ShowAdImg()
         {
-            BackgroundRun(delegate
-            {
-                try
-                {
-                    adImgTimerFlag = true;
-                    TimerState adImgTimerState = new TimerState();
+            adImgTimerFlag = true;
+            TimerState adImgTimerState = new TimerState();
 
-                    adImgTimerState.Filepaths = HttpUtils.GetFiles(FileUtils.ResPathsEnum.AdImg, urls, null);
+            adImgTimerState.Filepaths = WechatPrinterConf.AdImgFilepaths;
 
-                    Timer adImgTimer = new Timer(AdImgTimerCallBack, adImgTimerState, 0, AD_IMG_TIMER_INTERVAL);
-                    adImgTimerState.MainTimer = adImgTimer;
-
-                    if (stage != null)
-                    {
-                        stage.Stage(1);
-                    }
-                }
-                catch (Exception ex)
-                {
-                    Console.WriteLine("[ShowAdImg Error]");
-                    Console.WriteLine(ex.StackTrace);
-                    stage.Stage(-1);
-                }
-            });
-
+            Timer adImgTimer = new Timer(AdImgTimerCallBack, adImgTimerState, 0, AD_IMG_TIMER_INTERVAL);
+            adImgTimerState.MainTimer = adImgTimer;
         }
 
         DoubleAnimation adFadeInAnim = new DoubleAnimation(1d, TimeSpan.FromMilliseconds(AD_IMG_FADE_TIME));
@@ -319,53 +286,24 @@ namespace WechatPrinter
         }
         #endregion
 
-        #region 获得并更新广告视频
+        #region 更新广告视频
         private bool adVidInit = false;
         private static StringCollection adVidFilepaths = null;
         private int adVidCounter = 0;
-        public void ShowAdVid(StringCollection urls, ILoadStage stage, IDownloadProgress progress = null)
+        public void ShowAdVid()
         {
-            BackgroundRun(delegate
+            StringCollection filepaths = WechatPrinterConf.AdVidFilepaths;
+            adVidCounter = 0;
+            if (filepaths.Count > 0)
             {
-                try
-                {
-                    //bool flag = true;
-                    //if (adVidFilepaths != null && adVidFilepaths.Count > 0 && adVidFilepaths.Count == urls.Count)
-                    //{
-                    //    for (int i = 0; i < (adVidFilepaths.Count >= urls.Count ? urls.Count : adVidFilepaths.Count); i++)
-                    //    {
-                    //        if (adVidFilepaths[i].Equals(urls[i].Substring(urls[i].LastIndexOf("/") + 1)))
-                    //        {
-                    //            flag = false;
-                    //            break;
-                    //        }
-                    //    }
-                    //}
-                    //if (flag)
-                    //{
-                    StringCollection filepaths = HttpUtils.GetFiles(FileUtils.ResPathsEnum.AdVid, urls, null, false, progress);
-                    adVidCounter = 0;
-                    if (filepaths.Count > 0)
-                    {
-                        adVidFilepaths = filepaths;
-                        AdVidEnded(null, null);
-                    }
-                    if (!adVidInit)
-                    {
-                        page.mediaElement_ad.MediaEnded += AdVidEnded;
-                        adVidInit = true;
-                    }
-                    //}
-                    if (stage != null)
-                        stage.Stage(1 << 1);
-                }
-                catch (Exception ex)
-                {
-                    Console.WriteLine("[ShowAdVid Error]");
-                    Console.WriteLine(ex.StackTrace);
-                }
-            });
-
+                adVidFilepaths = filepaths;
+                AdVidEnded(null, null);
+            }
+            if (!adVidInit)
+            {
+                page.mediaElement_ad.MediaEnded += AdVidEnded;
+                adVidInit = true;
+            }
         }
 
         public void AdVidEnded(Object o, EventArgs a)
@@ -386,7 +324,7 @@ namespace WechatPrinter
         {
             page.Dispatcher.BeginInvoke(new Action(delegate
             {
-                if (WechatPrinterConf.Captcha != -1)
+                if (WechatPrinterConf.Captcha != -1 || WechatPrinterConf.Captcha != 0)
                 {
                     page.textBlock_captcha.Text = WechatPrinterConf.Captcha.ToString();
                 }
@@ -429,7 +367,6 @@ namespace WechatPrinter
             if (!networkErrorTimerFlag)
             {
                 networkErrorTimerFlag = true;
-
                 TimerState errorTimerState = new TimerState();
                 errorTimerState.Filepaths = new StringCollection() { errorString };
                 Timer errorTimer = new Timer(NetworkErrorTimerCallBack, errorTimerState, 0, ERROR_TIMER_INTERVAL);
@@ -468,14 +405,17 @@ namespace WechatPrinter
         #endregion
 
         #region 打印机错误
-        private bool printerErrorTimerFlag;
+        private bool printerErrorTimerFlag = false;
         public void ShowPrinterError(PrintQueueStatus status)
         {
-            printerErrorTimerFlag = true;
-            TimerState errorTimerState = new TimerState();
-            errorTimerState.Filepaths = new StringCollection() { ErrorUtils.HandlePrinterError(status) };
-            Timer errorTimer = new Timer(PrinterErrorTimerCallBack, errorTimerState, 0, ERROR_TIMER_INTERVAL);
-            errorTimerState.MainTimer = errorTimer;
+            if (!printerErrorTimerFlag)
+            {
+                printerErrorTimerFlag = true;
+                TimerState errorTimerState = new TimerState();
+                errorTimerState.Filepaths = new StringCollection() { ErrorUtils.HandlePrinterError(status) };
+                Timer errorTimer = new Timer(PrinterErrorTimerCallBack, errorTimerState, 0, ERROR_TIMER_INTERVAL);
+                errorTimerState.MainTimer = errorTimer;
+            }
         }
         private void PrinterErrorTimerCallBack(Object state)
         {

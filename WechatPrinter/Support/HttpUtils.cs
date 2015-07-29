@@ -247,8 +247,8 @@ namespace WechatPrinter.Support
                 if (!isPost)
                 {
                     WebResponse response = DoGet(url, param);
-                    //if(progress!=null)
-                    //    progress.Progress(response.ContentLength,-2);
+                    if (progress != null)
+                        progress.Progress(response.ContentLength, -2);
                     using (Stream stream = response.GetResponseStream())
                     {
                         return FileUtils.SaveFile(stream, path, filename, progress);

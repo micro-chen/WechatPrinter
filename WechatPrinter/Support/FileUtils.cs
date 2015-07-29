@@ -15,12 +15,12 @@ namespace WechatPrinter.Support
     public class FileUtils
     {
 
-        public enum ResPathsEnum { PrintImg, AdImg, AdVid, QR };
+        public enum ResPathsEnum { PrintImg, AdImg, AdVid, QR, Logo };
         public static string LogPath = rootPath + "errors.log";
 
         private static string rootPath = AppDomain.CurrentDomain.BaseDirectory;
         private static string resPath = rootPath + "res\\";
-        private static string[] resPaths = { resPath + "print\\", resPath + "ad\\img\\", resPath + "ad\\vid\\", resPath + "qr\\" };
+        private static string[] resPaths = { resPath + "print\\", resPath + "ad\\img\\", resPath + "ad\\vid\\", resPath + "qr\\", resPath + "logo\\" };
         private const int FOLDER_SIZE_LIMIT = 300;
 
 
@@ -69,8 +69,8 @@ namespace WechatPrinter.Support
                 {
                     using (FileStream fs = File.Create(filepath + filename))
                     {
-                        //CopyStream(stream, fs, progress);
-                        stream.CopyTo(fs);
+                        CopyStream(stream, fs, progress);
+                        //stream.CopyTo(fs);
                     }
                 }
                 Console.WriteLine("SaveFile: " + filepath + filename);
@@ -118,7 +118,7 @@ namespace WechatPrinter.Support
 
         private static void CopyStream(Stream input, Stream output, IDownloadProgress progress = null)
         {
-            const int bufferSize = 32768;
+            const int bufferSize = 256000;
             byte[] buffer = new byte[bufferSize];
             int buffered = 0;
             int read;
@@ -127,7 +127,7 @@ namespace WechatPrinter.Support
                 output.Write(buffer, 0, read);
                 buffered += read;
                 if (progress != null)
-                    progress.Progress(-2, read);
+                    progress.Progress(-2, buffered);
             }
         }
 
