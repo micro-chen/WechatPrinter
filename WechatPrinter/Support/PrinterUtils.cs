@@ -155,7 +155,7 @@ namespace WechatPrinter.Support
 
                                 BitmapImage logo = new BitmapImage();
                                 logo.BeginInit();
-                                logo.UriSource = new Uri(WechatPrinterConf.PrinterLogoFilePath);
+                                logo.UriSource = new Uri(WechatPrinterConf.LogoFilepath);
                                 logo.EndInit();
                                 logo.Freeze();
 
@@ -199,43 +199,55 @@ namespace WechatPrinter.Support
                         isPrinting = true;
                     }
                     Console.WriteLine("Printing");
-                    if (printerStatus != null)
-                        printerStatus.PrinterAvailable();
-                }
-                else if (printQueue.IsWaiting || printQueue.QueueStatus == PrintQueueStatus.None)
-                {
-                    if (isPrinting)
-                    {
-                        if (printerStatus != null)
-                            printerStatus.PrinterCompeleted(imgId);
-                        PrinterUtils.imgId = EmptyImgId;
-                        isPrinting = false;
-                    }
-                    if (printerStatus != null)
-                        printerStatus.PrinterAvailable();
-                }
-                else if (printQueue.IsTonerLow)
-                {
-                    if (isPrinting)
-                    {
-                        if (printerStatus != null)
-                            printerStatus.PrinterCompeleted(imgId);
-                        PrinterUtils.imgId = EmptyImgId;
-                        isPrinting = false;
-                    }
-                    if (printerStatus != null)
-                        printerStatus.PrinterError(PrintQueueStatus.TonerLow, imgId);
+                    //if (printerStatus != null)
+                    //    printerStatus.PrinterAvailable();
                 }
                 else
                 {
-                    if (printerStatus != null)
-                        printerStatus.PrinterError(printQueue.QueueStatus, imgId);
-                    PrinterUtils.imgId = EmptyImgId;
+                     if (isPrinting)
+                     {
+                         if (printerStatus != null)
+                             printerStatus.PrinterCompeleted(imgId);
+                         PrinterUtils.imgId = EmptyImgId;
+                         isPrinting = false;
+                     }
+                     //if (printerStatus != null)
+                     //    printerStatus.PrinterAvailable();
+                }
+                //else if (printQueue.IsWaiting || printQueue.QueueStatus == PrintQueueStatus.None)
+                //{
+                //    if (isPrinting)
+                //    {
+                //        if (printerStatus != null)
+                //            printerStatus.PrinterCompeleted(imgId);
+                //        PrinterUtils.imgId = EmptyImgId;
+                //        isPrinting = false;
+                //    }
+                //    if (printerStatus != null)
+                //        printerStatus.PrinterAvailable();
+                //}
+                //else if (printQueue.IsTonerLow)
+                //{
+                //    if (isPrinting)
+                //    {
+                //        if (printerStatus != null)
+                //            printerStatus.PrinterCompeleted(imgId);
+                //        PrinterUtils.imgId = EmptyImgId;
+                //        isPrinting = false;
+                //    }
+                //    if (printerStatus != null)
+                //        printerStatus.PrinterError(PrintQueueStatus.TonerLow, imgId);
+                //}
+                //else
+                //{
+                //    if (printerStatus != null)
+                //        printerStatus.PrinterError(printQueue.QueueStatus, imgId);
+                //    PrinterUtils.imgId = EmptyImgId;
 
-                    //TODO 打印机错误
+                //    //TODO 打印机错误
 
                    
-                }
+                //}
                 Thread.Sleep(PRINTER_CHECK_INTERVAL);
             }
         }

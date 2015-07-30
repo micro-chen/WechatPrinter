@@ -22,63 +22,29 @@ namespace WechatPrinter.Support
         private const string PRINT_IMG_URL = "http://114.215.80.157/Home/Printer/getpic";
         private const string PRINT_IMG_CALLBACK_URL = "http://114.215.80.157/Home/Printer/stateReceive";
 
-        public const int LOADING_WAIT_TIME = 0 * 1000;
+        private const int PRINT_IMG_TIMER_INTERVAL = 5 * 1000;
+        private const int LOADED_WAIT_TIME = 2 * 1000;
+        private const int PRINT_WAIT_TIME = 10 * 1000;
 
-        //private const string PRINTER_NAME = "Canon iP2700 series";
+        private const string PRINTER_NAME = "Canon iP2700 series";
         //private const string PRINTER_NAME = "EPSON L300 Series";
-        private const string PRINTER_NAME = "Microsoft XPS Document Writer";
+        //private const string PRINTER_NAME = "Microsoft XPS Document Writer";
 
-        //private const double PRINT_EDGE = 832 * 0.0377;
-        //private const double PRINT_RATIO = SCREEN_DPI / PRINT_DPI;
-        //private const double PRINT_WIDTH = 832 - PRINT_EDGE;
-        ////private const double PRINT_HEIGHT = 1107;
-        ////private const double PRINT_HEIGHT = PRINT_WIDTH * 1.33;
-        //private const double PRINT_HEIGHT = PRINT_WIDTH;
-        //private const double PRINT_HEIGHT_POS = PRINT_EDGE * PRINT_RATIO;
-        //private const double PRINT_WIDTH_POS = PRINT_EDGE * PRINT_RATIO;
-
-        private const double PRINT_EDGE = 832 * 0.0377;
-        private const double PRINT_RATIO = SCREEN_DPI / PRINT_DPI;
-        private const double PRINT_WIDTH = 832 - PRINT_EDGE;
-        //private const double PRINT_HEIGHT = 1107;
-        //private const double PRINT_HEIGHT = PRINT_WIDTH * 1.33;
-        private const double PRINT_HEIGHT = PRINT_WIDTH;
-        private const double PRINT_HEIGHT_POS = PRINT_EDGE * PRINT_RATIO;
-        private const double PRINT_WIDTH_POS = 840 * PRINT_RATIO;
-
-        //private const double PRINT_LOGO_HEIGHT = 55;
-        //private const double PRINT_LOGO_WIDTH = PRINT_LOGO_HEIGHT*8;
-        private const double PRINT_LOGO_HEIGHT = 150;
-
-        //CoolMore Logo
-        //private const double PRINT_LOGO_WIDTH = PRINT_LOGO_HEIGHT * 1.8;
-
-        //西江日抱 Logo
-        private const double PRINT_LOGO_WIDTH = PRINT_LOGO_HEIGHT * 2.5;
-
-
-        private const double PRINT_LOGO_HEIGHT_POS = (PRINT_HEIGHT + PRINT_EDGE * 2) * PRINT_RATIO;
-        private const double PRINT_LOGO_WIDTH_POS = PRINT_WIDTH_POS;
-        private const string PRINT_LOGO_FILE_PATH = "pack://application:,,,/Resource/Image/xjrb_logo.jpg";
-
-        //private const double PRINT_LOGO_WIDTH_POS = PRINT_WIDTH * (PRINT_RATIO) / 2 - (PRINT_LOGO_HEIGHT * (PRINT_RATIO) * 5.65) / 2 + PRINT_WIDTH_POS;
-        //private const double PRINT_QR_HEIGHT = PRINT_LOGO_HEIGHT * 8;
-        private const double PRINT_QR_HEIGHT = 216;
-        private const double PRINT_QR_HEIGHT_POS = PRINT_LOGO_HEIGHT_POS;
-        private const double PRINT_QR_WIDTH_POS = PRINT_WIDTH_POS + (PRINT_WIDTH - PRINT_QR_HEIGHT) * PRINT_RATIO;
         private const double PRINT_DPI = 300;
         private const double SCREEN_DPI = 96;
-
-        private const int PRINT_IMG_TIMER_INTERVAL = 5 * 1000;
-
-        private const int PRINT_WAIT_TIME = 8 * 1000;
-
-        private static StringCollection adImgFilepaths = null;
-        private static StringCollection adVidFilepaths = null;
-        private static string qrCodeFilepath = String.Empty;
-        private static string logoFilepath = String.Empty;
-        private static int captcha = -1;
-        private static string coName = String.Empty;
+        private const double PRINT_RATIO = SCREEN_DPI / PRINT_DPI;
+        private const double PRINT_EDGE = 832 * 0.0377;
+        private const double PRINT_WIDTH = 832 - PRINT_EDGE;
+        private const double PRINT_HEIGHT = PRINT_WIDTH;
+        private const double PRINT_HEIGHT_POS = PRINT_EDGE * PRINT_RATIO;
+        private const double PRINT_WIDTH_POS = 812 * PRINT_RATIO ;
+        private const double PRINT_LOGO_HEIGHT = 200;
+        private const double PRINT_LOGO_WIDTH = PRINT_LOGO_HEIGHT * 1.8;
+        private const double PRINT_LOGO_HEIGHT_POS = (PRINT_HEIGHT + PRINT_EDGE * 2.5) * PRINT_RATIO;
+        private const double PRINT_LOGO_WIDTH_POS = PRINT_WIDTH_POS - 35 *PRINT_RATIO;
+        private const double PRINT_QR_HEIGHT = 216;
+        private const double PRINT_QR_HEIGHT_POS = (PRINT_HEIGHT + PRINT_EDGE * 2) * PRINT_RATIO;
+        private const double PRINT_QR_WIDTH_POS = PRINT_WIDTH_POS + (PRINT_WIDTH - PRINT_QR_HEIGHT) * PRINT_RATIO;
 
         private static bool isPrinting = false;
 
@@ -104,6 +70,13 @@ namespace WechatPrinter.Support
         public static string Id { get { return WECHAT_PRINTER_ID.ToString(); } }
         public static string Token { get { return WECHAT_PRINTER_TOKEN; } }
 
+        private static StringCollection adImgFilepaths = null;
+        private static StringCollection adVidFilepaths = null;
+        private static string qrCodeFilepath = String.Empty;
+        private static string logoFilepath = String.Empty;
+        private static int captcha = -1;
+        private static string coName = String.Empty;
+
         public static StringCollection AdImgFilepaths { get { return adImgFilepaths; } private set { adImgFilepaths = value; } }
         public static StringCollection AdVidFilepaths { get { return adVidFilepaths; } private set { adVidFilepaths = value; } }
         public static string QRCodeFilepath { get { return qrCodeFilepath; } private set { qrCodeFilepath = value; } }
@@ -124,7 +97,6 @@ namespace WechatPrinter.Support
         public static double PrinterWidthPos { get { return PRINT_WIDTH_POS; } }
         public static double PrinterLogoHeight { get { return PRINT_LOGO_HEIGHT; } }
         public static double PrinterLogoWidth { get { return PRINT_LOGO_WIDTH; } }
-        public static string PrinterLogoFilePath { get { return PRINT_LOGO_FILE_PATH; } }
         public static double PrinterLogoHeightPos { get { return PRINT_LOGO_HEIGHT_POS; } }
         public static double PrinterLogoWidthPos { get { return PRINT_LOGO_WIDTH_POS; } }
         public static double PrinterQrHeight { get { return PRINT_QR_HEIGHT; } }
@@ -134,6 +106,7 @@ namespace WechatPrinter.Support
         public static double ScreenDpi { get { return SCREEN_DPI; } }
         public static int PrintImgInterval { get { return PRINT_IMG_TIMER_INTERVAL; } }
         public static int PrintWaitTime { get { return PRINT_WAIT_TIME; } }
+        public static int LoadedWaitTime { get { return LOADED_WAIT_TIME; } }
 
         public static bool IsPrinting { get { return isPrinting; } set { isPrinting = value; } }
 

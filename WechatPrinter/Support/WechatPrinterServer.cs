@@ -237,12 +237,13 @@ namespace WechatPrinter
         }
 
         DoubleAnimation adFadeInAnim = new DoubleAnimation(1d, TimeSpan.FromMilliseconds(AD_IMG_FADE_TIME));
+        BitmapImage[] bis = new BitmapImage[3];
         private void AdImgTimerCallBack(Object state)
         {
             TimerState s = (TimerState)state;
-            BitmapImage[] bis = new BitmapImage[3];
             for (int i = 0; i < 3; i++)
             {
+                bis[i] = null;
                 if (s.Counter == s.Filepaths.Count)
                     s.Counter = 0;
                 bis[i] = FileUtils.LoadImage(s.Filepaths[s.Counter++], AD_IMG_DECODE_WIDTH);

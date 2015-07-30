@@ -103,7 +103,7 @@
                 </Grid.RowDefinitions>
 
                 <!--<Border SnapsToDevicePixels="True" Grid.Row="0" Grid.Column="0" Width="300" Height="300" VerticalAlignment="Top" Margin="20,50,20,0">-->
-                    <Image x:Name="image_QR" />
+                    <Image x:Name="image_QR" MouseDown="image_QR_MouseDown" />
                     <!--<Border.Background>
                         <RadialGradientBrush 
                               GradientOrigin="0.5,0.5" Center="0.5,0.5" 

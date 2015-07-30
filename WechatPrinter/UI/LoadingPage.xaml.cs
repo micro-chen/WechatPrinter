@@ -89,17 +89,9 @@ namespace WechatPrinter
                         else
                         {
 
-                            for (int i = 0; i < info.picUrl.Count; i++)
-                            {
-                                info.picUrl[i] = WechatPrinterConf.PRE_URL + info.picUrl[i];
-                            }
-                            for (int i = 0; i < info.videoUrl.Count; i++)
-                            {
-                                info.videoUrl[i] = WechatPrinterConf.PRE_URL + info.videoUrl[i];
-                            }
+                            for (int i = 0; i < info.picUrl.Count; i++) { info.picUrl[i] = WechatPrinterConf.PRE_URL + info.picUrl[i]; }
+                            for (int i = 0; i < info.videoUrl.Count; i++) { info.videoUrl[i] = WechatPrinterConf.PRE_URL + info.videoUrl[i]; }
                             info.qrcodeUrl = WechatPrinterConf.PRE_URL + info.qrcodeUrl;
-
-
 
                             page = new MainPage();
                             server = new WechatPrinterServer(page);
@@ -114,7 +106,7 @@ namespace WechatPrinter
                                     StringCollection adImgFilepaths = LoadAdImg(info.picUrl);
                                     StringCollection adVidFilepaths = LoadAdVid(info.videoUrl);
                                     string qrCodeFilepath = LoadQRCode(info.qrcodeUrl);
-                                    string logoFilepath = LoadLogo(info.logoUrl);
+                                    string logoFilepath = "pack://application:,,,/Resource/Image/coolmore_black.png";
 
                                     if (WechatPrinterConf.Init(
                                         adImgFilepaths,
@@ -137,7 +129,6 @@ namespace WechatPrinter
                                 MessageBox.Show("微信打印服务器正在维护", "提示", MessageBoxButton.OK, MessageBoxImage.Information);
                                 Window.GetWindow(this).Close();
                             }
-
                         }
                     }
                 };
@@ -151,10 +142,10 @@ namespace WechatPrinter
             try
             {
                 s = HttpUtils.GetFile(FileUtils.ResPathsEnum.QR, url, null);
+
             }
             catch
             {
-
             }
             return s;
         }
@@ -202,10 +193,11 @@ namespace WechatPrinter
             return sc;
         }
 
-        private static int sum = 0;
-        public void Stage(int stage)
+        private int stage;
+        public void Stage(int s)
         {
-            if (stage == -1)
+            stage = s;
+            if (s == -1)
             {
                 if (MessageBox.Show("因网络原因加载资源失败，重试？", "错误", MessageBoxButton.YesNo, MessageBoxImage.Error) == MessageBoxResult.Yes)
                 {
@@ -218,13 +210,12 @@ namespace WechatPrinter
             }
             else
             {
-                sum += stage;
                 Dispatcher.BeginInvoke(new Action(delegate
                 {
-                    switch (sum)
+                    switch (s)
                     {
                         case 0:
-                            label_loading.Content = "加载资源...";
+                            label_loading.Content = "加载图片...";
                             break;
                         case 1:
                             label_loading.Content = "图片加载完成，加载视频...";
@@ -235,7 +226,6 @@ namespace WechatPrinter
                         case 1 << 2:
 
                             server.ShowCoName();
-                            server.ShowQRImg();
                             server.ShowAdVid();
                             page.mediaElement_ad.Opacity = 1d;
                             page.mediaElement_ad.Play();
@@ -245,6 +235,7 @@ namespace WechatPrinter
                             page.image_ad3.Opacity = 1d;
                             server.ShowCaptcha();
                             page.label_captcha.Opacity = 1d;
+                            server.ShowQRImg();
 
                             label_loading.Content = "资源加载完成，启动中...";
                             DispatcherTimer timer = new DispatcherTimer();
@@ -253,7 +244,7 @@ namespace WechatPrinter
                                 ((DispatcherTimer)o).Stop();
                                 status.LoadCompleted(page, server);
                             };
-                            timer.Interval = new TimeSpan(0, 0, 0, 0, WechatPrinterConf.LOADING_WAIT_TIME);
+                            timer.Interval = new TimeSpan(0, 0, 0, 0, WechatPrinterConf.LoadedWaitTime);
                             timer.Start();
                             break;
                     }
@@ -277,12 +268,12 @@ namespace WechatPrinter
                 Console.WriteLine(vidLength);
 
                 currentProgress = (int)(((double)read / (double)vidLength) * 100);
-                if (sum == 1)
+                if (stage == 1)
                 {
                     Dispatcher.BeginInvoke(new Action(delegate
-                {
-                    label_loading.Content = "图片加载完成，加载视频... " + Convert.ToString(currentProgress) + "%";
-                }));
+                    {
+                        label_loading.Content = "图片加载完成，加载视频... " + Convert.ToString(currentProgress) + "%";
+                    }));
                 }
 
             }

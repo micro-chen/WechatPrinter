@@ -54,5 +54,15 @@ namespace WechatPrinter
             //mediaElement_ad.Position = TimeSpan.Zero;
             //mediaElement_ad.Play();
         }
+
+        private void image_QR_MouseDown(object sender, MouseButtonEventArgs e)
+        {
+            //if (MessageBox.Show("删除缓存并重新加载？", "提示", MessageBoxButton.YesNo, MessageBoxImage.Question) == MessageBoxResult.Yes)
+            //{
+            //    FileUtils.CleanCache();
+            //    System.Windows.Forms.Application.Restart();
+            //    Application.Current.Shutdown();
+            //}
+        }
     }
 }

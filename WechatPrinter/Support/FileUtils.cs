@@ -9,6 +9,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Media.Imaging;
+using WechatPrinter.Support;
 
 namespace WechatPrinter.Support
 {
@@ -23,9 +24,28 @@ namespace WechatPrinter.Support
         private static string[] resPaths = { resPath + "print\\", resPath + "ad\\img\\", resPath + "ad\\vid\\", resPath + "qr\\", resPath + "logo\\" };
         private const int FOLDER_SIZE_LIMIT = 300;
 
+        public static void CleanCache(string filepath = null)
+        {
+            DirectoryInfo resDir;
+            if(filepath == null)
+                resDir = new DirectoryInfo(resPath);
+            else
+                resDir = new DirectoryInfo(filepath);
+
+                foreach (FileInfo file in resDir.GetFiles()) 
+                    try { file.Delete(); }
+                    catch { }
+
+                foreach (DirectoryInfo dir in resDir.GetDirectories()) 
+                    try { CleanCache(dir.FullName); dir.Delete(true); }
+                    catch { }
+        }
 
         public static BitmapImage LoadImage(string filepath, int decodeWidth)
         {
+
+            Console.WriteLine(filepath);
+
             MemoryStream ms = new MemoryStream();
             Bitmap bm = new Bitmap(filepath);
             bm.Save(ms, ImageFormat.Png);
