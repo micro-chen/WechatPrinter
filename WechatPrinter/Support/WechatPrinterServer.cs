@@ -263,16 +263,16 @@ namespace WechatPrinter
                         timer.Tick += (oo, ee) =>
                         {
                             ((DispatcherTimer)oo).Stop();
-                            page.image_ad1.BeginAnimation(MediaElement.OpacityProperty, adFadeInAnim);
-                            page.image_ad2.BeginAnimation(MediaElement.OpacityProperty, adFadeInAnim);
-                            page.image_ad3.BeginAnimation(MediaElement.OpacityProperty, adFadeInAnim);
+                            page.image_ad1.BeginAnimation(UIElement.OpacityProperty, adFadeInAnim);
+                            page.image_ad2.BeginAnimation(UIElement.OpacityProperty, adFadeInAnim);
+                            page.image_ad3.BeginAnimation(UIElement.OpacityProperty, adFadeInAnim);
                         };
                         timer.Interval = new TimeSpan(0, 0, 0, 0, AD_IMG_WAIT_BEFORE_IN);
                         timer.Start();
                     };
-                    page.image_ad1.BeginAnimation(MediaElement.OpacityProperty, adFadeOutAnim);
-                    page.image_ad2.BeginAnimation(MediaElement.OpacityProperty, adFadeOutAnim);
-                    page.image_ad3.BeginAnimation(MediaElement.OpacityProperty, adFadeOutAnim);
+                    page.image_ad1.BeginAnimation(UIElement.OpacityProperty, adFadeOutAnim);
+                    page.image_ad2.BeginAnimation(UIElement.OpacityProperty, adFadeOutAnim);
+                    page.image_ad3.BeginAnimation(UIElement.OpacityProperty, adFadeOutAnim);
                 }));
             }
             else
@@ -302,7 +302,7 @@ namespace WechatPrinter
             }
             if (!adVidInit)
             {
-                page.mediaElement_ad.MediaEnded += AdVidEnded;
+                //page.mediaElement_ad.MediaEnded += AdVidEnded;
                 adVidInit = true;
             }
         }
@@ -311,11 +311,11 @@ namespace WechatPrinter
         {
             if (adVidCounter == adVidFilepaths.Count)
                 adVidCounter = 0;
+            page.mediaElement_ad.Close();
             Uri uri = new Uri(adVidFilepaths[adVidCounter++]);
             page.Dispatcher.BeginInvoke(new Action(delegate
             {
                 page.mediaElement_ad.Source = uri;
-                //page.mediaElement_ad.Source = new Uri("C:\\Users\\Joe\\Desktop\\深米游戏.mov");
             }));
         }
         #endregion

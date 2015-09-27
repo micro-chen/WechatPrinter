@@ -106,13 +106,15 @@ namespace WechatPrinter
                                     StringCollection adImgFilepaths = LoadAdImg(info.picUrl);
                                     StringCollection adVidFilepaths = LoadAdVid(info.videoUrl);
                                     string qrCodeFilepath = LoadQRCode(info.qrcodeUrl);
-                                    string logoFilepath = "pack://application:,,,/Resource/Image/coolmore_black.png";
+                                    string printQRCodeFilepath = "pack://application:,,,/Resource/Image/printQR.jpg";
+                                    string logoFilepath = "pack://application:,,,/Resource/Image/printLogo.jpg";
 
                                     if (WechatPrinterConf.Init(
                                         adImgFilepaths,
                                         adVidFilepaths,
                                         logoFilepath,
                                         qrCodeFilepath,
+                                        printQRCodeFilepath,
                                         info.name,
                                         info.verifyCode))
                                     {
@@ -287,6 +289,7 @@ namespace WechatPrinter
         public StringCollection videoUrl { get; set; }
         public StringCollection picUrl { get; set; }
         public string qrcodeUrl { get; set; }
+        public string printQrCodeUrl { get; set; }
         public int verifyCode { get; set; }
         public string name { get; set; }
         public string logoUrl { get; set; }

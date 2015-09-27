@@ -37,11 +37,11 @@ namespace WechatPrinter.Support
         private const double PRINT_WIDTH = 832 - PRINT_EDGE;
         private const double PRINT_HEIGHT = PRINT_WIDTH;
         private const double PRINT_HEIGHT_POS = PRINT_EDGE * PRINT_RATIO;
-        private const double PRINT_WIDTH_POS = 812 * PRINT_RATIO ;
-        private const double PRINT_LOGO_HEIGHT = 200;
-        private const double PRINT_LOGO_WIDTH = PRINT_LOGO_HEIGHT * 1.8;
+        private const double PRINT_WIDTH_POS = (810 + PRINT_EDGE) * PRINT_RATIO;
+        private const double PRINT_LOGO_HEIGHT = 300;
+        //private const double PRINT_LOGO_WIDTH = PRINT_LOGO_HEIGHT * 1.8;
         private const double PRINT_LOGO_HEIGHT_POS = (PRINT_HEIGHT + PRINT_EDGE * 2.5) * PRINT_RATIO;
-        private const double PRINT_LOGO_WIDTH_POS = PRINT_WIDTH_POS - 35 *PRINT_RATIO;
+        private const double PRINT_LOGO_WIDTH_POS = PRINT_WIDTH_POS;
         private const double PRINT_QR_HEIGHT = 216;
         private const double PRINT_QR_HEIGHT_POS = (PRINT_HEIGHT + PRINT_EDGE * 2) * PRINT_RATIO;
         private const double PRINT_QR_WIDTH_POS = PRINT_WIDTH_POS + (PRINT_WIDTH - PRINT_QR_HEIGHT) * PRINT_RATIO;
@@ -51,16 +51,17 @@ namespace WechatPrinter.Support
         private const int HTTP_RETRY_TIMES = 1;
         private const int HTTP_TIMTOUT = 30 * 1000;
 
-        public static bool Init(StringCollection adImgFilepaths, StringCollection adVidFilepaths, string logoFilepath, string qrCodeFilepath, string coName, int captcha)
+        public static bool Init(StringCollection adImgFilepaths, StringCollection adVidFilepaths, string logoFilepath, string qrCodeFilepath,string printQRCodeFilepath, string coName, int captcha)
         {
             bool flag = true;
             AdImgFilepaths = adImgFilepaths;
             AdVidFilepaths = adVidFilepaths;
             QRCodeFilepath = qrCodeFilepath;
+            PrintQRCodeFilepath = printQRCodeFilepath;
             LogoFilepath = logoFilepath;
             Captcha = captcha;
             CoName = coName;
-
+            
             if (QRCodeFilepath.Equals(String.Empty))
                 flag = false;
 
@@ -73,6 +74,7 @@ namespace WechatPrinter.Support
         private static StringCollection adImgFilepaths = null;
         private static StringCollection adVidFilepaths = null;
         private static string qrCodeFilepath = String.Empty;
+        private static string printQrCodeFilepath = String.Empty;
         private static string logoFilepath = String.Empty;
         private static int captcha = -1;
         private static string coName = String.Empty;
@@ -80,10 +82,11 @@ namespace WechatPrinter.Support
         public static StringCollection AdImgFilepaths { get { return adImgFilepaths; } private set { adImgFilepaths = value; } }
         public static StringCollection AdVidFilepaths { get { return adVidFilepaths; } private set { adVidFilepaths = value; } }
         public static string QRCodeFilepath { get { return qrCodeFilepath; } private set { qrCodeFilepath = value; } }
+        public static string PrintQRCodeFilepath { get { return printQrCodeFilepath; } private set { printQrCodeFilepath = value; } }
         public static string LogoFilepath { get { return logoFilepath; } set { logoFilepath = value; } }
         public static int Captcha { get { return captcha; } set { captcha = value; } }
         public static string CoName { get { return coName; } private set { coName = value; } }
-        
+
 
         public static string InitUrl { get { return INIT_URL; } }
         public static string PrintImgUrl { get { return PRINT_IMG_URL; } }
@@ -96,7 +99,7 @@ namespace WechatPrinter.Support
         public static double PrinterHeightPos { get { return PRINT_HEIGHT_POS; } }
         public static double PrinterWidthPos { get { return PRINT_WIDTH_POS; } }
         public static double PrinterLogoHeight { get { return PRINT_LOGO_HEIGHT; } }
-        public static double PrinterLogoWidth { get { return PRINT_LOGO_WIDTH; } }
+        //public static double PrinterLogoWidth { get { return PRINT_LOGO_WIDTH; } }
         public static double PrinterLogoHeightPos { get { return PRINT_LOGO_HEIGHT_POS; } }
         public static double PrinterLogoWidthPos { get { return PRINT_LOGO_WIDTH_POS; } }
         public static double PrinterQrHeight { get { return PRINT_QR_HEIGHT; } }

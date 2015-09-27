@@ -46,14 +46,9 @@ namespace WechatPrinter
         {
             window = (MainWindow)Window.GetWindow(this);
             window.KeyDown += page_main_KeyDown;
-
+            
         }
-
-        private void mediaElement_AdVideo_MediaEnded(object sender, RoutedEventArgs e)
-        {
-            //mediaElement_ad.Position = TimeSpan.Zero;
-            //mediaElement_ad.Play();
-        }
+       
 
         private void image_QR_MouseDown(object sender, MouseButtonEventArgs e)
         {
@@ -63,6 +58,12 @@ namespace WechatPrinter
             //    System.Windows.Forms.Application.Restart();
             //    Application.Current.Shutdown();
             //}
+        }
+
+        private void mediaElement_ad_MediaEnded(object sender, RoutedEventArgs e)
+        {
+            mediaElement_ad.Position = TimeSpan.FromSeconds(0);
+            mediaElement_ad.Play();
         }
     }
 }

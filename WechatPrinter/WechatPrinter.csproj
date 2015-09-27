@@ -39,6 +39,7 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <UseVSHostingProcess>false</UseVSHostingProcess>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <PlatformTarget>AnyCPU</PlatformTarget>
@@ -145,6 +146,8 @@
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
     </None>
     <AppDesigner Include="Properties\" />
+    <Resource Include="Resource\Image\printLogo.jpg" />
+    <Resource Include="Resource\Image\printQR.jpg" />
     <None Include="WechatPrinter_TemporaryKey.pfx" />
     <Resource Include="Resource\Font\Let%27s go Digital Regular.ttf">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
@@ -175,9 +178,6 @@
   </ItemGroup>
   <ItemGroup>
     <Resource Include="Resource\Image\coolmore_white.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <Resource Include="Resource\Image\coolmore_black.png" />
   </ItemGroup>
   <ItemGroup>
     <Resource Include="Resource\Image\bg_new.jpg" />
