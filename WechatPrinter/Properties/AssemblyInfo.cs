@@ -10,9 +10,9 @@ using System.Windows;
 [assembly: AssemblyTitle("微信打印")]
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("深米科技")]
+[assembly: AssemblyCompany("酷魔科技")]
 [assembly: AssemblyProduct("微信打印")]
-[assembly: AssemblyCopyright("Copyright © 深米科技")]
+[assembly: AssemblyCopyright("Copyright © 酷魔科技")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 

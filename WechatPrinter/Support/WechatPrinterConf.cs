@@ -14,7 +14,26 @@ namespace WechatPrinter.Support
 
         public const bool DEBUG = false;
 
+        #region SM
+
+        //private const ulong WECHAT_PRINTER_ID = 1L;
+        //private const string PRINTER_NAME = "EPSON L300 Series";
+        //private const double PRINT_LOGO_HEIGHT = 300;
+        //private const double PRINT_WIDTH_POS = PRINT_EDGE * PRINT_RATIO;
+
+        #endregion
+
+        #region CoolMore
+
         private const ulong WECHAT_PRINTER_ID = 2L;
+        private const string PRINTER_NAME = "EPSON L310 Series";
+        private const double PRINT_LOGO_HEIGHT = 200;
+        //private const double PRINT_WIDTH_POS = (810 + PRINT_EDGE) * PRINT_RATIO;
+        private const double PRINT_WIDTH_POS = PRINT_EDGE * PRINT_RATIO;
+
+        #endregion
+
+
         private const string WECHAT_PRINTER_TOKEN = ""; //TODO token
 
         private const string INIT_URL = "http://114.215.80.157/Home/Printer/login";
@@ -26,8 +45,6 @@ namespace WechatPrinter.Support
         private const int LOADED_WAIT_TIME = 2 * 1000;
         private const int PRINT_WAIT_TIME = 10 * 1000;
 
-        private const string PRINTER_NAME = "Canon iP2700 series";
-        //private const string PRINTER_NAME = "EPSON L300 Series";
         //private const string PRINTER_NAME = "Microsoft XPS Document Writer";
 
         private const double PRINT_DPI = 300;
@@ -37,8 +54,6 @@ namespace WechatPrinter.Support
         private const double PRINT_WIDTH = 832 - PRINT_EDGE;
         private const double PRINT_HEIGHT = PRINT_WIDTH;
         private const double PRINT_HEIGHT_POS = PRINT_EDGE * PRINT_RATIO;
-        private const double PRINT_WIDTH_POS = (810 + PRINT_EDGE) * PRINT_RATIO;
-        private const double PRINT_LOGO_HEIGHT = 300;
         //private const double PRINT_LOGO_WIDTH = PRINT_LOGO_HEIGHT * 1.8;
         private const double PRINT_LOGO_HEIGHT_POS = (PRINT_HEIGHT + PRINT_EDGE * 2.5) * PRINT_RATIO;
         private const double PRINT_LOGO_WIDTH_POS = PRINT_WIDTH_POS;
