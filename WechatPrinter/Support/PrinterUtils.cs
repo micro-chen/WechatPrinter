@@ -2,13 +2,9 @@
 using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Imaging;
-using System.Globalization;
 using System.IO;
-using System.Linq;
 using System.Printing;
-using System.Text;
 using System.Threading;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
@@ -32,18 +28,12 @@ namespace WechatPrinter.Support
 
         public static void Start(IPrinterStatus ps)
         {
-            ThreadPool.QueueUserWorkItem(delegate(object o)
+            ThreadPool.QueueUserWorkItem(delegate (object o)
             {
-                foreach (PrintQueue pq in new LocalPrintServer().GetPrintQueues())
-                {
-                    if (pq.Name.Equals(WechatPrinterConf.PrinterName))
-                    {
-                        printQueue = pq;
-                        printDialog = new PrintDialog();
-                        printDialog.PrintQueue = printQueue;
-                        break;
-                    }
-                }
+                printQueue = GetPrintQueueByName();
+                printDialog = new PrintDialog();
+                printDialog.PrintQueue = printQueue;
+
                 printerStatus = (IPrinterStatus)o;
                 run = true;
                 Work();
@@ -51,25 +41,7 @@ namespace WechatPrinter.Support
 
         }
 
-        public static bool Check()
-        {
-            bool status = false;
-            foreach (PrintQueue pq in new LocalPrintServer().GetPrintQueues())
-            {
-                Console.WriteLine(pq.Name);
-                if (pq.Name.Equals(WechatPrinterConf.PrinterName))
-                {
-                    status = true;
-                    break;
-                }
-            }
-            return status;
-        }
-
-        public static void Stop()
-        {
-            run = false;
-        }
+        
 
         public static void Print(string filepath, int imgId)
         {
@@ -181,9 +153,21 @@ namespace WechatPrinter.Support
                                     dc.DrawDrawing(group);
                                 }
 
+                                PrintTicket pt = FileUtils.GetPrintTicket();
+                                if (pt == null)
+                                {
+                                    printerStatus.PrinterConf();
+                                    while (pt == null)
+                                    {
+                                        Thread.Sleep(500);
+                                        pt = FileUtils.GetPrintTicket();
+                                    }
+                                }
+
+
+                                printDialog.PrintTicket = pt;
 
                                 isPrinting = true;
-
                                 printDialog.PrintVisual(vis, "Wechat Printer Image");
                             }
                             catch (Exception ex)
@@ -205,15 +189,15 @@ namespace WechatPrinter.Support
                 }
                 else
                 {
-                     if (isPrinting)
-                     {
-                         if (printerStatus != null)
-                             printerStatus.PrinterCompeleted(imgId);
-                         PrinterUtils.imgId = EmptyImgId;
-                         isPrinting = false;
-                     }
-                     //if (printerStatus != null)
-                     //    printerStatus.PrinterAvailable();
+                    if (isPrinting)
+                    {
+                        if (printerStatus != null)
+                            printerStatus.PrinterCompeleted(imgId);
+                        PrinterUtils.imgId = EmptyImgId;
+                        isPrinting = false;
+                    }
+                    //if (printerStatus != null)
+                    //    printerStatus.PrinterAvailable();
                 }
                 //else if (printQueue.IsWaiting || printQueue.QueueStatus == PrintQueueStatus.None)
                 //{
@@ -247,17 +231,43 @@ namespace WechatPrinter.Support
 
                 //    //TODO 打印机错误
 
-                   
+
                 //}
                 Thread.Sleep(PRINTER_CHECK_INTERVAL);
             }
         }
+
+        public static PrintQueue GetPrintQueueByName()
+        {
+            PrintQueue queue = null;
+            foreach (PrintQueue pq in new LocalPrintServer().GetPrintQueues())
+            {
+                if (pq.Name.Equals(WechatPrinterConf.PrinterName))
+                {
+                    queue = pq;
+                }
+            }
+            return queue;
+        }
+
+        public static bool Check()
+        {
+            return GetPrintQueueByName() != null ? true : false;
+        }
+
+        public static void Stop()
+        {
+            run = false;
+        }
     }
+
+
 
     public interface IPrinterStatus
     {
         void PrinterError(PrintQueueStatus error, int imgId);
         void PrinterAvailable();
         void PrinterCompeleted(int imgId);
+        void PrinterConf();
     }
 }

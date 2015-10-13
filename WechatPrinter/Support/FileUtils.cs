@@ -6,6 +6,8 @@ using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
+using System.Printing;
+using System.Runtime.Serialization.Formatters.Binary;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Media.Imaging;
@@ -22,7 +24,30 @@ namespace WechatPrinter.Support
         private static string rootPath = AppDomain.CurrentDomain.BaseDirectory;
         private static string resPath = rootPath + "res\\";
         private static string[] resPaths = { resPath + "print\\", resPath + "ad\\img\\", resPath + "ad\\vid\\", resPath + "qr\\", resPath + "logo\\" };
+        private static string printTicketPath = rootPath + "\\"+ "打印配置文件（删除此文件重新配置打印机）.xml";
         private const int FOLDER_SIZE_LIMIT = 300;
+
+        public static PrintTicket GetPrintTicket()
+        {
+            try
+            {
+                StreamReader reader = new StreamReader(printTicketPath);
+                PrintTicket pt = new PrintTicket(reader.BaseStream);
+                reader.Close();
+                return pt;
+            }
+            catch
+            {
+                return null;
+            }
+        }
+
+        public static void SavePrintTicket(PrintTicket pt)
+        {
+            StreamWriter writer = new StreamWriter(printTicketPath);
+            pt.SaveTo(writer.BaseStream);
+            writer.Close();
+        }
 
         public static void CleanCache(string filepath = null)
         {

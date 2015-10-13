@@ -18,14 +18,14 @@ namespace WechatPrinter.Support
 
         //private const ulong WECHAT_PRINTER_ID = 1L;
         //private const string PRINTER_NAME = "EPSON L300 Series";
-        //private const double PRINT_LOGO_HEIGHT = 300;
+        //private const double PRINT_LOGO_HEIGHT = 70;
         //private const double PRINT_WIDTH_POS = PRINT_EDGE * PRINT_RATIO;
 
         #endregion
 
         #region CoolMore
 
-        private const ulong WECHAT_PRINTER_ID = 2L;
+        private const ulong WECHAT_PRINTER_ID = 256L;
         private const string PRINTER_NAME = "EPSON L310 Series";
         private const double PRINT_LOGO_HEIGHT = 200;
         //private const double PRINT_WIDTH_POS = (810 + PRINT_EDGE) * PRINT_RATIO;
@@ -43,7 +43,7 @@ namespace WechatPrinter.Support
 
         private const int PRINT_IMG_TIMER_INTERVAL = 5 * 1000;
         private const int LOADED_WAIT_TIME = 2 * 1000;
-        private const int PRINT_WAIT_TIME = 10 * 1000;
+        private const int PRINT_WAIT_TIME = 25 * 1000;
 
         //private const string PRINTER_NAME = "Microsoft XPS Document Writer";
 
@@ -64,7 +64,7 @@ namespace WechatPrinter.Support
         private static bool isPrinting = false;
 
         private const int HTTP_RETRY_TIMES = 1;
-        private const int HTTP_TIMTOUT = 30 * 1000;
+        private const int HTTP_TIMTOUT = 6 * 1000;
 
         public static bool Init(StringCollection adImgFilepaths, StringCollection adVidFilepaths, string logoFilepath, string qrCodeFilepath,string printQRCodeFilepath, string coName, int captcha)
         {

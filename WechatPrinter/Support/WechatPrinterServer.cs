@@ -1,24 +1,14 @@
 ﻿using System;
-using System.IO;
-using System.Net;
 using System.Threading;
 using System.Windows;
 using System.Collections.Generic;
 using System.Printing;
-using System.Web.Script.Serialization;
 using System.Windows.Media.Imaging;
-using System.Windows.Media;
-using System.Drawing;
-using System.Drawing.Imaging;
-using System.Drawing.Drawing2D;
 using System.Collections.Specialized;
-using System.Net.Sockets;
-using System.Collections;
-using System.ComponentModel;
 using System.Windows.Media.Animation;
 using WechatPrinter.Support;
-using System.Windows.Controls;
 using System.Windows.Threading;
+using System.Windows.Controls;
 
 namespace WechatPrinter
 {
@@ -496,6 +486,19 @@ namespace WechatPrinter
         {
             PrinterUtils.Print(filepath, imgId);
         }
+        public void PrinterConf()
+        {
+            page.Dispatcher.BeginInvoke(new Action(delegate {
+                PrintDialog printDialog = new PrintDialog();
+                printDialog.PrintQueue = PrinterUtils.GetPrintQueueByName();
+                var dialogStatus = printDialog.ShowDialog();
+                while (!dialogStatus.HasValue || !(bool)dialogStatus)
+                {
+                    dialogStatus = printDialog.ShowDialog();
+                }
+                FileUtils.SavePrintTicket(printDialog.PrintTicket);
+            }));
+        }
         #endregion
 
         #region Support Classes
@@ -535,5 +538,7 @@ namespace WechatPrinter
             adImgTimerFlag = false;
             networkErrorTimerFlag = false;
         }
+
+        
     }
 }

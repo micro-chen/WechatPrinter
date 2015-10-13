@@ -154,6 +154,7 @@
 
                 <!--<Label Content="V1.0 Copyright © 深米科技" Foreground="#FFE1F5FE" FontSize="22" HorizontalAlignment="Center" Grid.Row="4"  Grid.Column="0" VerticalAlignment="Bottom"/>-->
                 <Image SnapsToDevicePixels="True" HorizontalAlignment="Center" Grid.Row="6"  Grid.Column="0" Source="pack://application:,,,/Resource/Image/coolmore_white.png" Stretch="Uniform" Margin="20,-40,20,-60" />
+                <!--<Image SnapsToDevicePixels="True" HorizontalAlignment="Center" Grid.Row="6"  Grid.Column="0" Source="pack://application:,,,/Resource/Image/smkj_white.png" Stretch="Uniform" Margin="20,-40,20,-60" />-->
             </Grid>
         </Border>
     </Grid>

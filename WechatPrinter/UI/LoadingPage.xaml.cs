@@ -96,27 +96,37 @@ namespace WechatPrinter
                             page = new MainPage();
                             server = new WechatPrinterServer(page);
 
-                            try
+
+
+                            Stage(0);
+
+                            ThreadPool.QueueUserWorkItem(delegate
                             {
-
-                                Stage(0);
-
-                                ThreadPool.QueueUserWorkItem(delegate
+                                try
                                 {
                                     StringCollection adImgFilepaths = LoadAdImg(info.picUrl);
                                     StringCollection adVidFilepaths = LoadAdVid(info.videoUrl);
+
+                                    #region SM
+                                    //string qrCodeFilepath = "pack://application:,,,/Resource/Image/smkj_printQR.jpg";
+                                    //    string printQRCodeFilepath = "pack://application:,,,/Resource/Image/smkj_printQR.jpg";
+                                    //string logoFilepath = "pack://application:,,,/Resource/Image/smkj_printLogo.png";
+                                    #endregion
+
+                                    #region CoolMore
                                     string qrCodeFilepath = LoadQRCode(info.qrcodeUrl);
                                     string printQRCodeFilepath = "pack://application:,,,/Resource/Image/printQR.jpg";
                                     string logoFilepath = "pack://application:,,,/Resource/Image/printLogo.jpg";
+                                    #endregion
 
                                     if (WechatPrinterConf.Init(
-                                        adImgFilepaths,
-                                        adVidFilepaths,
-                                        logoFilepath,
-                                        qrCodeFilepath,
-                                        printQRCodeFilepath,
-                                        info.name,
-                                        info.verifyCode))
+                                            adImgFilepaths,
+                                            adVidFilepaths,
+                                            logoFilepath,
+                                            qrCodeFilepath,
+                                            printQRCodeFilepath,
+                                            info.name,
+                                            info.verifyCode))
                                     {
                                         Stage(1 << 2);
                                     }
@@ -124,13 +134,14 @@ namespace WechatPrinter
                                     {
                                         throw (new Exception());
                                     }
-                                });
-                            }
-                            catch
-                            {
-                                MessageBox.Show("微信打印服务器正在维护", "提示", MessageBoxButton.OK, MessageBoxImage.Information);
-                                Window.GetWindow(this).Close();
-                            }
+                                }
+                                catch
+                                {
+                                    MessageBox.Show("微信打印服务器正在维护", "提示", MessageBoxButton.OK, MessageBoxImage.Information);
+                                    Environment.Exit(1);
+                                }
+                            });
+
                         }
                     }
                 };
