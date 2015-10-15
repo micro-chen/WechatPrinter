@@ -43,7 +43,7 @@ namespace WechatPrinter.Support
 
         private const int PRINT_IMG_TIMER_INTERVAL = 5 * 1000;
         private const int LOADED_WAIT_TIME = 2 * 1000;
-        private const int PRINT_WAIT_TIME = 25 * 1000;
+        private const int PRINT_WAIT_TIME = 30 * 1000;
 
         //private const string PRINTER_NAME = "Microsoft XPS Document Writer";
 

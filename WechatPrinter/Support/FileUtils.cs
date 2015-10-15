@@ -66,22 +66,36 @@ namespace WechatPrinter.Support
                     catch { }
         }
 
-        public static BitmapImage LoadImage(string filepath, int decodeWidth)
+        public static BitmapImage LoadImage(string filepath, int decodeWidth = -1)
         {
 
             Console.WriteLine(filepath);
+            
+            {
+                using (Stream imgStream =
+                    filepath.Contains("pack://") ?
+                    System.Windows.Application.GetResourceStream(new Uri(filepath)).Stream:
+                    null)
+                {
+                    MemoryStream ms = new MemoryStream();
+                    using (Bitmap bm = imgStream != null ?
+                        new Bitmap(imgStream):
+                        new Bitmap(filepath))
+                    {
+                        bm.Save(ms, ImageFormat.Png);
+                        bm.Dispose();
+                    }
+                    BitmapImage bi = new BitmapImage();
+                    bi.BeginInit();
+                    bi.StreamSource = ms;
+                    if(decodeWidth != -1)
+                        bi.DecodePixelWidth = decodeWidth;
+                    bi.EndInit();
+                    bi.Freeze();
 
-            MemoryStream ms = new MemoryStream();
-            Bitmap bm = new Bitmap(filepath);
-            bm.Save(ms, ImageFormat.Png);
-            bm.Dispose();
-            BitmapImage bi = new BitmapImage();
-            bi.BeginInit();
-            bi.StreamSource = ms;
-            bi.DecodePixelWidth = decodeWidth;
-            bi.EndInit();
-            bi.Freeze();
-            return bi;
+                    return bi;
+                }
+            }
         }
 
         public static bool CheckFile(ResPathsEnum path, string filename)

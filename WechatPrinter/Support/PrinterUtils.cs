@@ -26,6 +26,9 @@ namespace WechatPrinter.Support
         private static bool isPrinting = false;
         private static int imgId = EmptyImgId;
 
+        private static BitmapImage logo;
+        private static BitmapImage qr;
+
         public static void Start(IPrinterStatus ps)
         {
             ThreadPool.QueueUserWorkItem(delegate (object o)
@@ -36,6 +39,12 @@ namespace WechatPrinter.Support
 
                 printerStatus = (IPrinterStatus)o;
                 run = true;
+
+                logo = FileUtils.LoadImage(WechatPrinterConf.LogoFilepath);
+                qr = FileUtils.LoadImage(WechatPrinterConf.PrintQRCodeFilepath);
+                
+                //qr.UriSource = new Uri(FileUtils.GetLatestFile(FileUtils.ResPathsEnum.QR));
+
                 Work();
             }, ps);
 
@@ -124,21 +133,9 @@ namespace WechatPrinter.Support
                                 tbi.Transform = new ScaleTransform(targetScale, targetScale);
                                 tbi.EndInit();
                                 tbi.Freeze();
-
-                                BitmapImage logo = new BitmapImage();
-                                logo.BeginInit();
-                                logo.UriSource = new Uri(WechatPrinterConf.LogoFilepath);
-                                logo.EndInit();
-                                logo.Freeze();
+                                
                                 double logoWidth = WechatPrinterConf.PrinterLogoHeight * ((double)logo.PixelWidth / (double)logo.PixelHeight);
-
-                                BitmapImage qr = new BitmapImage();
-                                qr.BeginInit();
-                                //qr.UriSource = new Uri(FileUtils.GetLatestFile(FileUtils.ResPathsEnum.QR));
-                                qr.UriSource = new Uri(WechatPrinterConf.PrintQRCodeFilepath);
-                                qr.EndInit();
-                                qr.Freeze();
-
+                                
                                 var group = new DrawingGroup();
                                 //group.Children.Add(new ImageDrawing(tbi, new Rect(WechatPrinterConf.PrinterWidthPos + WechatPrinterConf.PrinterWidth / 2d - (tbi.PixelWidth / 2d), WechatPrinterConf.PrinterHeightPos, tbi.PixelWidth * (WechatPrinterConf.ScreenDpi / WechatPrinterConf.PrinterDpi), tbi.PixelHeight * (WechatPrinterConf.ScreenDpi / WechatPrinterConf.PrinterDpi))));
                                 group.Children.Add(new ImageDrawing(tbi, new Rect(WechatPrinterConf.PrinterWidthPos + ((WechatPrinterConf.PrinterWidth - tbi.PixelWidth) / 2d) * (WechatPrinterConf.ScreenDpi / WechatPrinterConf.PrinterDpi), WechatPrinterConf.PrinterHeightPos + ((WechatPrinterConf.PrinterHeight - tbi.PixelHeight) / 2d) * (WechatPrinterConf.ScreenDpi / WechatPrinterConf.PrinterDpi), tbi.PixelWidth * (WechatPrinterConf.ScreenDpi / WechatPrinterConf.PrinterDpi), tbi.PixelHeight * (WechatPrinterConf.ScreenDpi / WechatPrinterConf.PrinterDpi))));

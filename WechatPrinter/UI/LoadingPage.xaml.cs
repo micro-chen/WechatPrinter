@@ -83,12 +83,9 @@ namespace WechatPrinter
                             for (int i = 0; i < info.videoUrl.Count; i++) { info.videoUrl[i] = WechatPrinterConf.PRE_URL + info.videoUrl[i]; }
                             info.qrcodeUrl = WechatPrinterConf.PRE_URL + info.qrcodeUrl;
 
-                            page = new MainPage();
-                            server = new WechatPrinterServer(page);
-
-
-
                             Stage(0);
+
+                            page = new MainPage();
 
                             ThreadPool.QueueUserWorkItem(delegate
                             {
@@ -105,7 +102,7 @@ namespace WechatPrinter
 
                                     #region CoolMore
                                     string qrCodeFilepath = LoadQRCode(info.qrcodeUrl);
-                                    string printQRCodeFilepath = "pack://application:,,,/Resource/Image/printQR.jpg";
+                                    string printQRCodeFilepath = qrCodeFilepath;
                                     string logoFilepath = "pack://application:,,,/Resource/Image/printLogo.jpg";
                                     #endregion
 
@@ -118,6 +115,10 @@ namespace WechatPrinter
                                             info.name,
                                             info.verifyCode))
                                     {
+                                        page.Dispatcher.BeginInvoke(new Action(delegate
+                                        {
+                                            server = new WechatPrinterServer(page);
+                                        }));
                                         Stage(1 << 2);
                                     }
                                     else
