@@ -27,7 +27,7 @@ namespace WechatPrinter.Support
 
         private const ulong WECHAT_PRINTER_ID = 256L;
         private const string PRINTER_NAME = "EPSON L310 Series";
-        private const double PRINT_LOGO_HEIGHT = 200;
+        private const double PRINT_LOGO_HEIGHT = 280;
         //private const double PRINT_WIDTH_POS = (810 + PRINT_EDGE) * PRINT_RATIO;
         private const double PRINT_WIDTH_POS = PRINT_EDGE * PRINT_RATIO;
 
