@@ -82,6 +82,7 @@ namespace WechatPrinter
                             for (int i = 0; i < info.picUrl.Count; i++) { info.picUrl[i] = WechatPrinterConf.PRE_URL + info.picUrl[i]; }
                             for (int i = 0; i < info.videoUrl.Count; i++) { info.videoUrl[i] = WechatPrinterConf.PRE_URL + info.videoUrl[i]; }
                             info.qrcodeUrl = WechatPrinterConf.PRE_URL + info.qrcodeUrl;
+                            info.logoUrl = WechatPrinterConf.PRE_URL + info.logoUrl;
 
                             Stage(0);
 
@@ -103,7 +104,8 @@ namespace WechatPrinter
                                     #region CoolMore
                                     string qrCodeFilepath = LoadQRCode(info.qrcodeUrl);
                                     string printQRCodeFilepath = qrCodeFilepath;
-                                    string logoFilepath = "pack://application:,,,/Resource/Image/printLogo.jpg";
+                                    //string logoFilepath = "pack://application:,,,/Resource/Image/printLogo.jpg";
+                                    string logoFilepath = LoadLogo(info.logoUrl);
                                     #endregion
 
                                     if (WechatPrinterConf.Init(

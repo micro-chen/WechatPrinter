@@ -27,12 +27,13 @@ namespace WechatPrinter.Support
 
         private const ulong WECHAT_PRINTER_ID = 256L;
         private const string PRINTER_NAME = "EPSON L310 Series";
-        private const double PRINT_LOGO_HEIGHT = 280;
+        private const double PRINT_LOGO_HEIGHT = 150;
         //private const double PRINT_WIDTH_POS = (810 + PRINT_EDGE) * PRINT_RATIO;
         private const double PRINT_WIDTH_POS = PRINT_EDGE * PRINT_RATIO;
 
         #endregion
 
+        //private const string PRINTER_NAME = "Microsoft XPS Document Writer";
 
         private const string WECHAT_PRINTER_TOKEN = ""; //TODO token
 
@@ -45,8 +46,6 @@ namespace WechatPrinter.Support
         private const int LOADED_WAIT_TIME = 2 * 1000;
         private const int PRINT_WAIT_TIME = 30 * 1000;
 
-        //private const string PRINTER_NAME = "Microsoft XPS Document Writer";
-
         private const double PRINT_DPI = 300;
         private const double SCREEN_DPI = 96;
         private const double PRINT_RATIO = SCREEN_DPI / PRINT_DPI;
@@ -55,7 +54,7 @@ namespace WechatPrinter.Support
         private const double PRINT_HEIGHT = PRINT_WIDTH;
         private const double PRINT_HEIGHT_POS = PRINT_EDGE * PRINT_RATIO;
         //private const double PRINT_LOGO_WIDTH = PRINT_LOGO_HEIGHT * 1.8;
-        private const double PRINT_LOGO_HEIGHT_POS = (PRINT_HEIGHT + PRINT_EDGE * 2.5) * PRINT_RATIO;
+        private const double PRINT_LOGO_HEIGHT_POS = (PRINT_HEIGHT + PRINT_EDGE * 3) * PRINT_RATIO;
         private const double PRINT_LOGO_WIDTH_POS = PRINT_WIDTH_POS;
         private const double PRINT_QR_HEIGHT = 216;
         private const double PRINT_QR_HEIGHT_POS = (PRINT_HEIGHT + PRINT_EDGE * 2) * PRINT_RATIO;

@@ -146,8 +146,6 @@
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
     </None>
     <AppDesigner Include="Properties\" />
-    <Resource Include="Resource\Image\printLogo.jpg" />
-    <Resource Include="Resource\Image\printQR.jpg" />
     <None Include="WechatPrinter_TemporaryKey.pfx" />
     <Resource Include="Resource\Font\Let%27s go Digital Regular.ttf">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
